@@ -1,11 +1,11 @@
-import re
 import errors
 from csv_writer import CSVWriter
 
 class WriterFactory:
     def instance_writer(self, output_config):
-        # TODO make more pretty?
-        if re.search(r'^.*?\.csv$', output_config.content["output"]) is not None:
-            return CSVWriter(output_config.content["output"], output_config.content["csv"]["sep"], output_config.content["csv"]["encoding"])
+        output = output_config.content["output"]
+        if output["method"] == "csv":
+            return CSVWriter(output["options"]["csv"]["path"], output["options"]["csv"]["sep"],
+                      output["options"]["csv"]["encoding"])
 
-        raise errors.UnsupportedOutputFormat("Writing to file {} not supported".format(output_config.content["output"]))
+        raise errors.UnsupportedOutputFormat("Format {} not supported".format(output["method"]))
