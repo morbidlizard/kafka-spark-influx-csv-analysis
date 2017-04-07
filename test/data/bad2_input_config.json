@@ -1,0 +1,6 @@
+{
+  "input": "bin",
+  "options": {
+    "filename": "data/input/test.csv"
+  }
+}
