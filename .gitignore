@@ -1,0 +1,5 @@
+metastore_db/**
+.idea/**
+__pycache__/**
+spark-warehouse/**
+*.log
