@@ -1,7 +1,22 @@
-{
-  "output": "1.csv",
-  "csv": {
-    "encoding": "utf-8",
-    "sep": ";"
-  }
-}
+ {
+	"input": {
+		"method": "csv",
+		"options": {
+			"csv": {
+				"path": "data/input/test.csv",
+				"encoding": "utf-8",
+				"sep": ";"
+			}
+		}
+	},
+	"output": {
+		"method": "csv",
+		"options": {
+			"csv": {
+				"path": "1.csv",
+				"encoding": "utf-8",
+				"sep": ";"
+			}
+		}
+	}
+ }

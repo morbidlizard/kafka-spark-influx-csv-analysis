@@ -3,4 +3,4 @@ class OutputWriter:
         self.path = path
 
     def write(self, rdd):
-        print("Override me in child classes!")
+        raise NotImplementedError("Write method should be overrided!")
