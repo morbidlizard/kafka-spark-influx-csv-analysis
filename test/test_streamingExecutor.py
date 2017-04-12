@@ -2,7 +2,7 @@ from unittest import TestCase
 from pyspark import SparkConf
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
-from error import ExecutorError
+from errors import ExecutorError
 from executors import StreamingExecutor
 
 

@@ -1,0 +1,29 @@
+ {
+	"input": {
+		"method": "csv",
+		"options": {
+			"csv": {
+				"path": "data/input/test.csv",
+				"encoding": "utf-8",
+				"sep": ";"
+			}
+		}
+	},
+	"output": {
+		"method": "csv",
+		"options": {
+			"csv": {
+				"path": "1.csv",
+				"encoding": "utf-8",
+				"sep": ";"
+			}
+		}
+	},
+    "processing": {
+    	"transforms": [ "transform1", "transform2", "transform3"],
+    	"aggregations": {
+			"operation_type": "reduceByKey",
+ 			"rule": "Count(field_name2):new_field_name2, key = field_name1, Sum(field_nameN)"
+		}
+	}
+ }

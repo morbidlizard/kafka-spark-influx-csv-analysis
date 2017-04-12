@@ -1,4 +1,4 @@
-from error import ExecutorError
+from errors import ExecutorError
 
 
 class Executor:
