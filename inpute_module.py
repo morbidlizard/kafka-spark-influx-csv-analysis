@@ -1,3 +1,4 @@
+import os
 from pyspark.sql import SparkSession
 from executors import BatchExecutor
 from error import InputError
@@ -18,6 +19,7 @@ class InputConfig:
         self.path = path_to_config
         with open(path_to_config) as cfg:
             self.content = json.load(cfg)
+        self.content["options"]["filename"] = os.path.join(os.path.dirname(__file__), self.content["options"]["filename"])
 
 
 class ReadFactory():

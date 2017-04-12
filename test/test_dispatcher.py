@@ -1,4 +1,6 @@
+import os
 import unittest
+
 from config import Config
 from dispatcher import Dispatcher
 
@@ -6,7 +8,7 @@ from mocks import ExecutorMock, WriterMock, ProcessorMock
 
 class DispatcherTestCase(unittest.TestCase):
     def test__init__(self):
-        config = Config("test/data/config.json")
+        config = Config(os.path.join(os.path.dirname(__file__), os.path.join("data","config.json")))
         dispatcher = Dispatcher(config)
 
         self.assertIsInstance(dispatcher.executor, ExecutorMock, "executor should has type ExecutorMock")
