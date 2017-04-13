@@ -3,11 +3,14 @@ from executors import BatchExecutor, StreamingExecutor
 from pyspark.sql import SparkSession
 from error import  ExecutorError
 
+import os
+
+INPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "test.csv"))
 
 class TestBatchExecutor(TestCase):
     def test___init__(self):
         spark = SparkSession.builder.getOrCreate()
-        rdd = spark.read.csv("data/test.csv").rdd
+        rdd = spark.read.csv(INPUT_PATH).rdd
         test_executor = BatchExecutor(rdd)
 
         self.assertIsInstance(test_executor, BatchExecutor,
@@ -16,7 +19,7 @@ class TestBatchExecutor(TestCase):
     def test_set_pipeline_processing(self):
 
         spark = SparkSession.builder.getOrCreate()
-        rdd = spark.read.csv("data/test.csv").rdd
+        rdd = spark.read.csv(INPUT_PATH).rdd
         test_executor = BatchExecutor(rdd)
         test_executor.set_pipeline_processing(lambda x: x.count())
 
@@ -25,7 +28,7 @@ class TestBatchExecutor(TestCase):
     def test_run_pipeline_processing(self):
 
         spark = SparkSession.builder.getOrCreate()
-        rdd = spark.read.csv("data/test.csv").rdd
+        rdd = spark.read.csv(INPUT_PATH).rdd
         test_executor = BatchExecutor(rdd)
         test_executor.set_pipeline_processing(lambda x: x.count())
         number_record = test_executor.run_pipeline()
