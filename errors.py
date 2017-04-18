@@ -1,6 +1,8 @@
 class UnsupportedOutputFormat(BaseException):
     pass
 
+class IncorrectExpression(BaseException):
+    pass
 
 class NotValidAggregationExpression(BaseException):
     pass

@@ -1,7 +1,6 @@
 class Processor:
     def __init__(self, config):
-        self.transform_rules = sorted(config.content["processing"], key=lambda item: item["id"])
-        self.transform_rules = [ (lambda row: row) for item in self.transform_rules]
+        self.transform_rules = [(lambda row: row) for item in range(0,3)]
 
         def chain_builder(rdd):
             for transformation in self.transform_rules:

@@ -19,22 +19,7 @@
       }
     }
   },
- "processing": [
-		{
-			"id": 3,
-			"operation": "combine",
-			"fields": ["field_to_combine1", "field_to_combine2"],
-			"operator" : "sum/sub/div/mul",
-			"result": ["field_name"]
-		},
-		{
-			"id": 2,
-			"operation": "map",
-			"fields": [{
-				"src": "src_field",
-				"dst": "dst_field",
-				"operator": "len"
-			}]
-		}
-	]
+  "processing": {
+    "transformation": "source_ip: src_ip;dst_ip;src_country: country_of(src_ip);traffic: mult(packet_size,sample_rate)"
+  }
 }
