@@ -8,7 +8,6 @@ class FieldTransformation:
         self.field_name = field_name  # new field name
         self.operation = operation  # SyntaxTree or string
 
-
 class SyntaxTree:
     def __init__(self):
         self.operation = None
@@ -24,7 +23,6 @@ class SyntaxTree:
                 ch.show(shift + 1)
             else:
                 print(" " * (shift + 1) * 2 + "Leaf node: ", ch)
-
 
 class TransformationsParser:
     def __init__(self, config):
@@ -90,7 +88,6 @@ class TransformationsParser:
             else:  # sum/minus/div and etc operations
                 new_field, field_or_expression = list(map(lambda t: t.strip(), token.split(":")))
                 self.expanded_transformation.append(FieldTransformation(new_field, self._parse(field_or_expression)))
-
 
 class TransformationsParserConfig:
     def __init__(self, path_to_config):
