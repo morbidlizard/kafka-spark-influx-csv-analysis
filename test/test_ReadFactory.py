@@ -3,7 +3,7 @@ import os
 
 from inpute_module import ReadFactory, InputConfig
 from executors import BatchExecutor
-from error import InputError
+from errors import InputError
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "input_config_csv.json"))
 INCORRECT_CONFIG1_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "bad1_input_config.json"))

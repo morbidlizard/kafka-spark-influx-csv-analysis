@@ -1,7 +1,7 @@
 from unittest import TestCase
 from executors import BatchExecutor, StreamingExecutor
 from pyspark.sql import SparkSession
-from error import  ExecutorError
+from errors import  ExecutorError
 
 import os
 

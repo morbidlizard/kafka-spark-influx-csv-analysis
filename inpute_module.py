@@ -1,7 +1,7 @@
 import os
 from pyspark.sql import SparkSession
 from executors import BatchExecutor
-from error import InputError
+from errors import InputError
 from pyspark.sql.types import *
 import json
 
