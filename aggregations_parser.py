@@ -1,22 +1,73 @@
 import re
 from errors import NotValidAggregationExpression
+from pyspark.sql.types import *
+
+Sum = lambda x, y: x + y
+Mult = lambda x, y: x * y
+Min = lambda x, y: x if x < y else y
+Max = lambda x, y: x if x > y else y
+
+
+class SupportReduceOperation:
+    def __init__(self):
+        self.operation = {"Sum": {"ref_to_func": Sum, "input_type": LongType(), "output_type": LongType()},
+                          "Mult": {"ref_to_func": Mult, "input_type": LongType(), "output_type": LongType()},
+                          "Min": {"ref_to_func": Min, "input_type": LongType(), "output_type": LongType()},
+                          "Max": {"ref_to_func": Max, "input_type": LongType(), "output_type": LongType()}}
+        self._type_transform_rule = {DoubleType(): 5, FloatType(): 4, LongType(): 3, IntegerType(): 2,
+                                     ShortType(): 1, ByteType(): 0}
+        self.numeric_types = self._type_transform_rule.keys()
+
+    def check_type_arg_function(self, type_input_arg, function_name):
+        if (self._type_transform_rule[self.operation[function_name]["input_type"]] >= self._type_transform_rule[
+            type_input_arg]) \
+                and (self._type_transform_rule[type_input_arg] >= self._type_transform_rule[
+                    self.operation[function_name]["output_type"]]):
+            return True
+        else:
+            return False
 
 
 class AggregationsParser:
-    def __init__(self, config):
+    def __init__(self, config, input_data_structure):
         self._config = config.content["processing"]["aggregations"]
         self._input_rule = config.content["processing"]["aggregations"]["rule"]
         self._regexp_reducefield = '\s*(\w+)\((\s*\w+\s*)\)\s*'
         self._regexp_keyfield = '\s*(key)\s*\=\s*(\w+)\s*'
+        self._input_data_structure = input_data_structure
+        self._expression = []
 
-    def _type_validation(self):
+    def _types_and_field_names_validation(self):
         """
-        Template.
-        The method validates parse expression and raise exception if something wrong
-        :return: return valid list of dictionaries. Every dictionary include next field: function = field with function,
-            input_field = input field name from source data
+        The method validates parse expression on types, fields name and function names
+        :return: return true if list of dictionaries is valid and false at other case
         """
-        pass
+
+        # check function name
+        reduce_operation = SupportReduceOperation()
+        set_expression_functions = set(x['func_name'] for x in self._expression if not x['key'])
+        set_support_functions = set(reduce_operation.operation.keys())
+        set_expression_fields = set(map(lambda x: x['input_field'], self._expression))
+        set_input_fields_data_structure = set(map(lambda x: x.name, self._input_data_structure))
+        dict_input_field_type = dict(map(lambda x: [x.name, x.dataType], self._input_data_structure))
+
+        if set_expression_functions - set_support_functions:
+            return False
+
+        if set_expression_fields - set_input_fields_data_structure:
+            return False
+
+        for field in self._expression:
+            if not field['key']:
+                if dict_input_field_type[field['input_field']] in reduce_operation.numeric_types:
+                    if not reduce_operation.check_type_arg_function(dict_input_field_type[field['input_field']],
+                                                                    field['func_name']):
+                        return False
+                else:
+                    if dict_input_field_type[field['input_field']] != \
+                            reduce_operation.operation[field['func_name']]['input_type']:
+                        return False
+        return True
 
     def get_parse_expression(self):
         """
@@ -24,7 +75,12 @@ class AggregationsParser:
         :return: return name of operation ("operation_type") and valid list of dictionaries ("rule"). Every dictionary
                 include next field: function = field with function, input_field = input field name from source data.
         """
-        return {"operation_type": self._config["operation_type"], "rule": self._parse_expression()}
+        self._expression = self._parse_expression()
+        if self._types_and_field_names_validation():
+            return {"operation_type": self._config["operation_type"], "rule": self._expression}
+        else:
+            raise NotValidAggregationExpression("Error: Not valid function name, field name or type input field for "
+                                                "function")
 
     def _field_validation(self, re_match_list, field):
         """
@@ -89,7 +145,7 @@ class AggregationsParser:
         :param field: input field
         :return: true if field contain valid character and false at other case
         """
-        return not len(re.sub('[a-zA-Z0-9\(\)\_\s\=]', '', field))>0
+        return not len(re.sub('[a-zA-Z0-9\(\)\_\s\=]', '', field)) > 0
 
     def _parse_reduce_by_key(self):
         """
@@ -107,7 +163,7 @@ class AggregationsParser:
                 residue_field = re.sub(self._regexp_reducefield, '', field)
                 residue_field = re.sub(self._regexp_keyfield, '', residue_field)
                 residue_field = re.sub('\s+', '', residue_field)
-                if len(residue_field)==0:
+                if len(residue_field) == 0:
                     if re_match_key_field and not re_match_list and len(re_match_key_field):
                         expression = {}
                         key_field = re_match_key_field[0][1]
@@ -127,14 +183,15 @@ class AggregationsParser:
                         expression["key"] = False
                         output_list.append(expression)
                     else:
-                        raise NotValidAggregationExpression("Error: Error in the rule '%s'. Perhaps a comma is missing." %
-                                                            self._input_rule)
+                        raise NotValidAggregationExpression(
+                            "Error: Error in the rule '%s'. Perhaps a comma is missing." %
+                            self._input_rule)
                 else:
                     raise NotValidAggregationExpression("Error: Error in the rule '%s'. Perhaps a comma is missing." %
-                                                            self._input_rule)
+                                                        self._input_rule)
             else:
                 raise NotValidAggregationExpression("Error: Error in the field '%s'. Find not valid characters" %
-                                                            field)
+                                                    field)
         if not self._check_unique_key_field(output_list):
             return output_list
         else:
