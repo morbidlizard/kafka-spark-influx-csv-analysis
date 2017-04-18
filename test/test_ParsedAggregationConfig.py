@@ -1,7 +1,34 @@
 from unittest import TestCase
-
+from pyspark.sql.types import *
 from errors import NotValidAggregationExpression
 from aggregations_parser import AggregationsParser
+
+timestamp = StructField('timestamp', LongType())  # 1
+flow_indicator = StructField('FLOW_indicator', StringType())  # 2
+agent_address = StructField('agent_address', StringType())  # 3
+input_port = StructField('input_port', IntegerType())  # 4
+output_port = StructField('output_port', IntegerType())  # 5
+src_mac = StructField('src_mac', StringType())  # 6
+dst_mac = StructField('dst_mac', StringType())  # 7
+ethernet_type = StructField('ethernet_type', StringType())  # 8
+in_vlan = StructField('in_vlan', IntegerType())  # 9
+out_vlan = StructField('out_vlan', IntegerType())  # 10
+src_ip = StructField('src_ip', StringType())  # 11
+dst_ip = StructField('dst_ip', StringType())  # 12
+ip_protocol = StructField('ip_protocol', StringType())  # 13
+ip_tos = StructField('ip_tos', StringType())  # 14
+ip_ttl = StructField('ip_ttl', StringType())  # 15
+src_port_or_icmp_type = StructField('src_port_or_icmp_type', IntegerType())  # 16
+dst_port_or_icmp_code = StructField('dst_port_or_icmp_code', IntegerType())  # 17
+tcp_flags = StructField('tcp_flags', StringType())  # 18
+packet_size = StructField('packet_size', LongType())  # 19
+ip_size = StructField('ip_size', IntegerType())  # 20
+sampling_rate = StructField('sampling_rate', IntegerType())  # 21
+
+data_struct = StructType([timestamp, flow_indicator, agent_address, input_port, output_port,
+                          src_mac, dst_mac, ethernet_type, in_vlan, out_vlan, src_ip, dst_ip,
+                          ip_protocol, ip_tos, ip_ttl, src_port_or_icmp_type, dst_port_or_icmp_code,
+                          tcp_flags, packet_size, ip_size, sampling_rate])
 
 
 class TestConfig():
@@ -11,11 +38,11 @@ class TestConfig():
 
 class TestAggregationsParser(TestCase):
     def test_get_parse_expression(self):
-        test_input_rule = "key = field_name1,Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "key = input_port,Min(packet_size), Sum(packet_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         test_expression_token = test_aggregation_config.get_parse_expression()
         self.assertIsInstance(test_expression_token, dict,
                               "Return value of the get_parse_expression method should be instance of dict")
@@ -26,10 +53,22 @@ class TestAggregationsParser(TestCase):
         self.assertGreater(len(test_expression_token["rule"]), 0,
                            "The dictionary should be contain not empty pair 'rule':list of token")
 
+        # test exception to incorrect type,function name or field name
+        test_input_rule = "key = field_name1,Count(field_name2), Sum(field_nameN)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, data_struct)
+
+        with self.assertRaises(NotValidAggregationExpression) as context:
+            test_expression_token = test_aggregation_config.get_parse_expression()
+        self.assertTrue("Not valid function name" in context.exception.args[0],
+                        "Catch exception, but it differs from test exception")
+
     def test__field_validation(self):
         config = TestConfig({"processing": {"aggregations": {"operation_type": "",
                                                              "rule": ""}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
 
         test_parse = test_aggregation_config._field_validation([('Count', 'field_name2')],
                                                                "Count(field_name2):new_field_name2")
@@ -58,7 +97,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         test_expression_token = test_aggregation_config._parse_reduce()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_reduce method should be instance of list")
@@ -72,7 +111,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce()
         self.assertTrue("Find not valid characters" in context.exception.args[0],
@@ -85,19 +124,18 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce()
         self.assertTrue("Error in the rule" in context.exception.args[0],
                         "Catch exception, but it differs from test exception")
-
 
     def test__check_uniq_key_field(self):
         test_input_rule = "Min(field_name1),Count(field_name2), Sum(field_nameN)"
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         self.assertTrue(test_aggregation_config._check_unique_key_field([{"input_field": "test1", "key": False},
                                                                          {"input_field": "test2", "key": False}]),
                         "Return value should be true if the input list don't contain key fields with true value")
@@ -110,7 +148,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_reduce_by_key method should be instance of list")
@@ -124,7 +162,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Not uniqueness key field" in context.exception.args[0],
@@ -137,7 +175,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("don't contain key field" in context.exception.args[0],
@@ -150,7 +188,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Error in the rule" in context.exception.args[0],
@@ -163,7 +201,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Find not valid characters" in context.exception.args[0],
@@ -176,19 +214,18 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Error in the rule" in context.exception.args[0],
                         "Catch exception, but it differs from test exception")
 
     def test__pars_expression(self):
-
         test_input_rule = "key = field_name1,Count(field_name2), Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         test_expression_token = test_aggregation_config._parse_expression()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_expression method should be instance of list")
@@ -197,7 +234,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
         test_expression_token = test_aggregation_config._parse_expression()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_expression method should be instance of list")
@@ -206,9 +243,52 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "groupBy"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config)
+        test_aggregation_config = AggregationsParser(config, data_struct)
 
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_expression()
         self.assertTrue("The operation" in context.exception.args[0],
                         "Catch exception, but it differs from test exception")
+
+    def test__types_and_fields_validation(self):
+        test_input_rule = "key = input_port,Min(in_vlan), Sum(ip_size)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_validation = test_aggregation_config._types_and_field_names_validation()
+
+        self.assertIsInstance(test_validation, bool,
+                              "Return value of the _types_and_field_names_validation method should be instance of bool")
+        self.assertTrue(test_validation, "Return value should be true for correct config")
+
+        # test wrong  function name
+        test_input_rule = "key = input_port,Sin(in_vlan), Sum(ip_size)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config._expression = test_aggregation_config._parse_expression()
+        test_validation = test_aggregation_config._types_and_field_names_validation()
+        self.assertFalse(test_validation, "Return value should be false for incorrect name function")
+
+        # test wrong field name
+        test_input_rule = "key = input_port,Min(in_vlan_bad), Sum(ip_size)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config._expression = test_aggregation_config._parse_expression()
+        test_validation = test_aggregation_config._types_and_field_names_validation()
+        self.assertFalse(test_validation, "Return value should be false for incorrect field name")
+
+        # test wrong  type of field
+        test_input_rule = "key = input_port,Min(dst_mac), Sum(ip_size)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config._expression = test_aggregation_config._parse_expression()
+        test_validation = test_aggregation_config._types_and_field_names_validation()
+
+        self.assertFalse(test_validation, "Return value should be false for incorrect type of field")
