@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from inpute_module import ReadFactory, InputConfig
+from input_module import ReadFactory, InputConfig
 from executors import BatchExecutor
 from errors import InputError
 
