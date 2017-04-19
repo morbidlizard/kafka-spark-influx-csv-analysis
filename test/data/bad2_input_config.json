@@ -1,6 +1,8 @@
 {
-  "input": "bin",
-  "options": {
-    "filename": "data/input/test.csv"
+  "input": {
+    "input_type": "bin",
+    "options": {
+    "filename": "test/data/test.csv"
+    }
   }
 }

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from pyspark import SparkConf
-from pyspark import SparkContext
+from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
 from errors import ExecutorError
 from executors import StreamingExecutor
@@ -14,8 +14,12 @@ def help_accumulator(rdd, sum_elements, num_zero_rdd):
 class TestStreamingExecutor(TestCase):
     def setUp(self):
         conf = SparkConf().setAppName("UnitTest")
-        self._sc = SparkContext(conf=conf)
-        self._ssc = StreamingContext(self._sc, 1)
+        # self._sc = SparkContext(conf=conf)
+        self._spark = SparkSession.builder \
+            .appName("TestStreamingExecutor") \
+            .getOrCreate()
+
+        self._ssc = StreamingContext(self._spark.sparkContext, 1)
         rdd_queue = []
         for i in range(3):
             rdd_queue += [self._ssc.sparkContext.parallelize([j for j in range(1, 5)], 5)]
@@ -23,7 +27,7 @@ class TestStreamingExecutor(TestCase):
         self._test_stream = self._ssc.queueStream(rdd_queue)
 
     def tearDown(self):
-        self._sc.stop()
+        self._spark.stop()
 
     def test___init__(self):
         test_executor = StreamingExecutor(self._test_stream)
@@ -34,8 +38,8 @@ class TestStreamingExecutor(TestCase):
         test_executor = StreamingExecutor(self._test_stream)
         test_executor.set_pipeline_processing(lambda rdd: help_accumulator(rdd, sum_elements, num_zero_rdd))
         test_executor.run_pipeline()
-        sum_elements = self._sc.accumulator(0)
-        num_zero_rdd = self._sc.accumulator(0)
+        sum_elements = self._spark.sparkContext.accumulator(0)
+        num_zero_rdd = self._spark.sparkContext.accumulator(0)
 
         self._ssc.start()
         while num_zero_rdd.value == 0:

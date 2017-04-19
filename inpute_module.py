@@ -19,7 +19,6 @@ class InputConfig:
         self.path = path_to_config
         with open(path_to_config) as cfg:
             self.content = json.load(cfg)
-        self.content["options"]["filename"] = os.path.join(os.path.dirname(__file__), self.content["options"]["filename"])
 
 
 class ReadFactory():
@@ -42,8 +41,11 @@ class ReadFactory():
         :return:
         """
         if ("input" in self._config.content.keys()):
-            if (self._config.content["input"] == "csv"):
-                return ReadCSVFile(self._config.content["options"]["filename"]).get_batch_executor()
+            self._config.content["input"]["options"]["filename"] = os.path.join(os.path.dirname(__file__),
+                                                                                self._config.content["input"]
+                                                                                ["options"]["filename"])
+            if (self._config.content["input"]["input_type"] == "csv"):
+                return ReadCSVFile(self._config.content["input"]["options"]["filename"]).get_batch_executor()
             raise InputError("Error: {} unsuported input format. ReadFactory cannot create Executable".format(
                 self._config.content["input"]))
         raise InputError("Error: Some option was miss in config file. ReadFactory cannot create Executable")
