@@ -1,6 +1,8 @@
 {
-  "input": "csv",
-  "options": {
-    "filename": "test/data/test.csv"
+  "input": {
+    "input_type": "csv",
+    "options": {
+      "filename": "test/data/test.csv"
+    }
   }
 }
