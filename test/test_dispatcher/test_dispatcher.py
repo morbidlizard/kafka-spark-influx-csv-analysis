@@ -1,15 +1,16 @@
 import os
 import unittest
 
-from config import Config
-from dispatcher import Dispatcher
-from executors import Executor
-from output_writer import OutputWriter
-from mocks import ExecutorMock, WriterMock, ProcessorMock
+from config_parsing.config import Config
+from dispatcher.dispatcher import Dispatcher
+from input.executors import Executor
+from mocks import ProcessorMock
+from output.output_writer import OutputWriter
+
 
 class DispatcherTestCase(unittest.TestCase):
     def test__init__(self):
-        config = Config(os.path.join(os.path.dirname(__file__), os.path.join("data", "config.json")))
+        config = Config(os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json")))
         dispatcher = Dispatcher(config)
 
         self.assertIsInstance(dispatcher.executor, Executor, "executor should has type Executor")

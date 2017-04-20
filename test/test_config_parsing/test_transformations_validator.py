@@ -1,9 +1,10 @@
 import unittest
-import errors
 
 import pyspark.sql.types as types
-from transformations_parser import FieldTransformation, SyntaxTree
-from transformations_validator import TransformatoinsValidator
+
+import errors
+from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
+from config_parsing.transformations_validator import TransformatoinsValidator
 
 
 class TransformationsValidatorTestCase(unittest.TestCase):

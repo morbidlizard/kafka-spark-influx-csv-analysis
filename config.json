@@ -1,0 +1,25 @@
+{
+  "input": {
+    "input_type": "csv",
+    "options": {
+    "filename": "test.csv"
+    }
+  },
+  "output": {
+    "method": "csv",
+    "options": {
+      "csv": {
+        "path": "1.csv",
+        "encoding": "utf-8",
+        "sep": ";"
+      }
+    }
+  },
+  "processing": {
+    "transformation": "source_ip: src_ip; dst_ip;src_country: country_of(src_ip); traffic: mult(packet_size,sampling_rate)",
+    "aggregations": {
+			"operation_type": "reduceByKey",
+ 			"rule": "Min(traffic), key = source_ip, Sum(traffic)"
+		}
+  }
+}

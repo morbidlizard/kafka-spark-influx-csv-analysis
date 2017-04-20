@@ -1,4 +1,5 @@
-from output_writer import OutputWriter
+from output.output_writer import OutputWriter
+
 
 class CSVWriter(OutputWriter):
     def __init__(self, path, sep=";", encoding="utf-8"):

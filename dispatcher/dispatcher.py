@@ -1,9 +1,9 @@
-from input_module import ReadFactory
-from writer_factory import WriterFactory
-from transformations_parser import TransformationsParser
-from transformations_validator import TransformatoinsValidator
-from aggregations_parser import AggregationsParser
+from config_parsing.aggregations_parser import AggregationsParser
+from config_parsing.transformations_parser import TransformationsParser
+from config_parsing.transformations_validator import TransformatoinsValidator
+from input.input_module import ReadFactory
 from mocks import ProcessorMock
+from output.writer_factory import WriterFactory
 
 
 class Dispatcher:

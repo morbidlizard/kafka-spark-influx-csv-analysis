@@ -1,5 +1,5 @@
 import errors
-from csv_writer import CSVWriter
+from output.csv_writer import CSVWriter
 
 class WriterFactory:
     def instance_writer(self, output_config):

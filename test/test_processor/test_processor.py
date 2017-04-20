@@ -1,11 +1,11 @@
-import unittest
-import types
 import os
+import types
+import unittest
 
-from processor import Processor
-from processor_config import ProcessorConfig
+from processor.processor import Processor
+from processor.processor_config import ProcessorConfig
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "config.json"))
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json"))
 
 class ProcessorTestCase(unittest.TestCase):
     def test__init__(self):

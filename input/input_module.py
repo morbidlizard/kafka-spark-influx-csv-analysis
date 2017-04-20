@@ -1,9 +1,12 @@
-import os
-from pyspark.sql import SparkSession
-from executors import BatchExecutor
-from errors import InputError
-from pyspark.sql.types import *
 import json
+import os
+import sys
+
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
+
+from errors import InputError
+from input.executors import BatchExecutor
 
 
 class InputConfig:
@@ -41,9 +44,6 @@ class ReadFactory():
         :return:
         """
         if ("input" in self._config.content.keys()):
-            self._config.content["input"]["options"]["filename"] = os.path.join(os.path.dirname(__file__),
-                                                                                self._config.content["input"]
-                                                                                ["options"]["filename"])
             if (self._config.content["input"]["input_type"] == "csv"):
                 return ReadCSVFile(self._config.content["input"]["options"]["filename"]).get_batch_executor()
             raise InputError("Error: {} unsuported input format. ReadFactory cannot create Executable".format(

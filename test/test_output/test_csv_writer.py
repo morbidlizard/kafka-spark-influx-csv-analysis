@@ -1,11 +1,12 @@
-import unittest
 import os
+import unittest
 
-from csv_writer import CSVWriter
 from pyspark.sql import SparkSession
 
-INPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "test_input.csv"))
-OUTPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "test_output.csv"))
+from output.csv_writer import CSVWriter
+
+INPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "test_input.csv"))
+OUTPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("test_output.csv"))
 
 class CSVWriterTestCase(unittest.TestCase):
     def tearDown(self):

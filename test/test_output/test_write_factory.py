@@ -1,13 +1,13 @@
-import unittest
-import errors
 import os
+import unittest
 
-from output_config import OutputConfig
-from csv_writer import CSVWriter
-from writer_factory import WriterFactory
+import errors
+from output.csv_writer import CSVWriter
+from output.output_config import OutputConfig
+from output.writer_factory import WriterFactory
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "config.json"))
-INCORRECT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "bad_config.json"))
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json"))
+INCORRECT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "bad_config.json"))
 
 class WriterFactoryTestCase(unittest.TestCase):
     def test_instance_writer(self):

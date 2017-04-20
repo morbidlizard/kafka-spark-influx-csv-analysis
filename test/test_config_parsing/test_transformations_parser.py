@@ -1,10 +1,11 @@
-import unittest
-import errors
 import os
+import unittest
 
-from transformations_parser import TransformationsParser, TransformationsParserConfig, SyntaxTree, FieldTransformation
+import errors
+from config_parsing.transformations_parser import TransformationsParser, TransformationsParserConfig, SyntaxTree, \
+    FieldTransformation
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "config.json"))
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json"))
 
 stub = {
     "sum": ["2", "2", "3"],
