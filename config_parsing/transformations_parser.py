@@ -2,7 +2,6 @@ import errors
 import json
 import re
 
-
 class FieldTransformation:
     def __init__(self, field_name, operation):
         self.field_name = field_name  # new field name
@@ -25,8 +24,8 @@ class SyntaxTree:
                 print(" " * (shift + 1) * 2 + "Leaf node: ", ch)
 
 class TransformationsParser:
-    def __init__(self, config):
-        self.transformations = config.content["processing"]["transformation"]
+    def __init__(self, transformations):
+        self.transformations = transformations
         self.expanded_transformation = [] # string or FieldTransformation
 
     def _parse(self, args):

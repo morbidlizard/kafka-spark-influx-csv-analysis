@@ -4,7 +4,7 @@ import unittest
 from config_parsing.config import Config
 from dispatcher.dispatcher import Dispatcher
 from input.executors import Executor
-from mocks import ProcessorMock
+from processor.processor import  Processor
 from output.output_writer import OutputWriter
 
 
@@ -16,7 +16,7 @@ class DispatcherTestCase(unittest.TestCase):
         self.assertIsInstance(dispatcher.executor, Executor, "executor should has type Executor")
         self.assertTrue(hasattr(dispatcher.executor, "set_pipeline_processing"), "executor should has set_pipeline_processing method")
 
-        self.assertIsInstance(dispatcher.processor, ProcessorMock, "processor should has type ProcessorMock")
+        self.assertIsInstance(dispatcher.processor, Processor, "processor should has type Processor")
         self.assertTrue(hasattr(dispatcher.processor, "get_pipeline_processing"),
                         "processor should has get_pipeline_processing method")
 

@@ -6,7 +6,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
 from errors import InputError
-from input.executors import BatchExecutor
+from .executors import BatchExecutor
 
 
 class InputConfig:
