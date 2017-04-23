@@ -1,4 +1,4 @@
-from inpute_module import ReadFactory
+from input_module import ReadFactory
 from writer_factory import WriterFactory
 from transformations_parser import TransformationsParser
 from transformations_validator import TransformatoinsValidator

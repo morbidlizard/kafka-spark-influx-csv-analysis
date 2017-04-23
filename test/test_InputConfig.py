@@ -1,6 +1,6 @@
 import unittest
 import os
-from inpute_module import InputConfig
+from input_module import InputConfig
 
 
 class InputConfigTestCase(unittest.TestCase):

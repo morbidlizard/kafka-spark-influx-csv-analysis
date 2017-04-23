@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from inpute_module import ReadCSVFile
+from input_module import ReadCSVFile
 from executors import BatchExecutor
 
 class ReadCSVFileTestCase(unittest.TestCase):
