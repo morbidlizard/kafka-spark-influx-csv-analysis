@@ -1,9 +1,9 @@
-from dispatcher import Dispatcher
-from config import Config
+from config_parsing.config import Config
+from dispatcher.dispatcher import Dispatcher
 
 if __name__ == "__main__":
     try:
-        config = Config("test/data/config.json")
+        config = Config("config.json")
         dispatcher = Dispatcher(config)
         dispatcher.run_pipeline()
     except BaseException as ex:

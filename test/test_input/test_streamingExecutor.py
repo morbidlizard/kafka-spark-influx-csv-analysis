@@ -1,9 +1,11 @@
 from unittest import TestCase
+
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
+
 from errors import ExecutorError
-from executors import StreamingExecutor
+from input.executors import StreamingExecutor
 
 
 def help_accumulator(rdd, sum_elements, num_zero_rdd):

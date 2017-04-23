@@ -1,8 +1,9 @@
 import re
-import errors
+
 import pyspark.sql.types as types
 
-from transformations_parser import FieldTransformation
+import errors
+from config_parsing.transformations_parser import FieldTransformation
 
 OPERATIONS = {
     "sum": {

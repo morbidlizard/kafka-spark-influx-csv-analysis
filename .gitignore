@@ -1,5 +1,5 @@
 metastore_db/**
 .idea/**
-__pycache__/**
+**/__pycache__/**
 spark-warehouse/**
 *.log

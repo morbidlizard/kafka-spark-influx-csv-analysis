@@ -1,11 +1,12 @@
-from unittest import TestCase
-from executors import BatchExecutor, StreamingExecutor
-from pyspark.sql import SparkSession
-from errors import  ExecutorError
-
 import os
+from unittest import TestCase
 
-INPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("data", "test.csv"))
+from pyspark.sql import SparkSession
+
+from errors import ExecutorError
+from input.executors import BatchExecutor
+
+INPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "test.csv"))
 
 class TestBatchExecutor(TestCase):
     def test___init__(self):

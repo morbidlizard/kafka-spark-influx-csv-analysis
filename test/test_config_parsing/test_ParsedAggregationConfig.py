@@ -1,7 +1,9 @@
 from unittest import TestCase
+
 from pyspark.sql.types import *
+
+from config_parsing.aggregations_parser import AggregationsParser
 from errors import NotValidAggregationExpression
-from aggregations_parser import AggregationsParser
 
 timestamp = StructField('timestamp', LongType())  # 1
 flow_indicator = StructField('FLOW_indicator', StringType())  # 2
