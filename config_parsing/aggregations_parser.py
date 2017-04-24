@@ -8,7 +8,7 @@ Min = lambda x, y: x if x < y else y
 Max = lambda x, y: x if x > y else y
 
 
-class SupportReduceOperation:
+class SupportedReduceOperations:
     def __init__(self):
         self.operation = {"Sum": {"ref_to_func": Sum, "input_type": LongType(), "output_type": LongType()},
                           "Mult": {"ref_to_func": Mult, "input_type": LongType(), "output_type": LongType()},
@@ -44,7 +44,7 @@ class AggregationsParser:
         """
 
         # check function name
-        reduce_operation = SupportReduceOperation()
+        reduce_operation = SupportedReduceOperations()
         set_expression_functions = set(x['func_name'] for x in self._expression if not x['key'])
         set_support_functions = set(reduce_operation.operation.keys())
         set_expression_fields = set(map(lambda x: x['input_field'], self._expression))
@@ -98,6 +98,7 @@ class AggregationsParser:
             input_field = re_match_list[0][1]
             expression["func_name"] = function_name
             expression["input_field"] = input_field
+            expression["key"] = False
         elif number_match == 0:
             raise NotValidAggregationExpression("Error: Error in the field %s. Perhaps a parenthesis is "
                                                 "missing or comma" % field)
@@ -180,7 +181,6 @@ class AggregationsParser:
                                                                 self._input_rule)
                     elif not re_match_key_field and re_match_list:
                         expression = self._field_validation(re_match_list, field)
-                        expression["key"] = False
                         output_list.append(expression)
                     else:
                         raise NotValidAggregationExpression(
