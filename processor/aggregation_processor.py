@@ -16,7 +16,6 @@ class AggregationProcessor:
                                     self._aggregation_expression["rule"] if not field["key"]}
 
     def get_aggregation_lambda(self):
-
         ordered_pointers_to_function = [self._support_reduce_operations[self._field_to_func_name[exp_tr]]
                                         ["ref_to_func"] for exp_tr in self._input_field_name]
         ranked_pointer = list(enumerate(ordered_pointers_to_function))

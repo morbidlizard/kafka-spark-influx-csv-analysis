@@ -11,7 +11,6 @@ class TestConfig():
 
 
 class TestAggregationProcessor(TestCase):
-
     def test_build_lambda(self):
         test_input_rule = "Min(packet_size),Max(sampling_rate), Sum(traffic)"
         input_data_structure = StructType([StructField("sampling_rate", LongType()),

@@ -5,7 +5,7 @@ import unittest
 from processor.processor import Processor
 from config_parsing.config import Config
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json"))
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config_processor.json"))
 
 class ProcessorTestCase(unittest.TestCase):
     def test__init__(self):

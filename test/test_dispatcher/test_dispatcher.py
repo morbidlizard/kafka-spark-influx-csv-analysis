@@ -10,7 +10,7 @@ from output.output_writer import OutputWriter
 
 class DispatcherTestCase(unittest.TestCase):
     def test__init__(self):
-        config = Config(os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json")))
+        config = Config(os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config_dispatcher.json")))
         dispatcher = Dispatcher(config)
 
         self.assertIsInstance(dispatcher.executor, Executor, "executor should has type Executor")
@@ -21,4 +21,4 @@ class DispatcherTestCase(unittest.TestCase):
                         "processor should has get_pipeline_processing method")
 
         self.assertIsInstance(dispatcher.writer, OutputWriter, "Writer should has type WriterMock")
-        self.assertTrue(hasattr(dispatcher.writer, "write"), "Writer should has write method")
+        self.assertTrue(hasattr(dispatcher.writer, "get_write_lambda"), "Writer should has get_write_lambda method")

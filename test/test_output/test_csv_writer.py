@@ -30,7 +30,9 @@ class CSVWriterTestCase(unittest.TestCase):
 
         dataframe = spark.read.csv(INPUT_PATH)
 
-        writer.write(dataframe.rdd)
+        write_lambda = writer.get_write_lambda()
+
+        write_lambda(dataframe.rdd)
         spark.stop()
 
         self.assertTrue(os.path.exists(OUTPUT_PATH), "Output file 'test_output.csv' should be created")
@@ -46,8 +48,8 @@ class CSVWriterTestCase(unittest.TestCase):
 
         dataframe = spark.read.csv(INPUT_PATH)
 
-        args = ("first", "second", "third")
-        writer.write(args)
+        write_lambda = writer.get_write_lambda()
+        write_lambda(("first", "second", "third"))
         spark.stop()
 
         self.assertTrue(os.path.exists(OUTPUT_PATH), "Output file 'test_output.csv' should be created")
@@ -63,7 +65,8 @@ class CSVWriterTestCase(unittest.TestCase):
 
         dataframe = spark.read.csv(INPUT_PATH)
 
-        writer.write(45)
+        write_lambda = writer.get_write_lambda()
+        write_lambda(45)
         spark.stop()
 
         self.assertTrue(os.path.exists(OUTPUT_PATH), "Output file 'test_output.csv' should be created")
