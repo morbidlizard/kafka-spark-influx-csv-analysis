@@ -77,7 +77,7 @@ class TestAggregationsParser(TestCase):
         self.assertIsInstance(test_parse, dict,
                               "Return value of the _field_validation method should be instance of dict")
         self.assertDictEqual(test_parse,
-                             {'func_name': 'Count', 'input_field': 'field_name2'},
+                             {'func_name': 'Count', 'input_field': 'field_name2', 'key': False},
                              "Dictionary should contain next pair:func_name: value, input_field: "
                              "value")
 
