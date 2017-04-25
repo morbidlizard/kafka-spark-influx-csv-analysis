@@ -1,4 +1,4 @@
-from output.output_writer import OutputWriter
+from .output_writer import OutputWriter
 
 class InfluxWriter(OutputWriter):
     def write(self, rdd):

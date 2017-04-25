@@ -37,7 +37,7 @@ stub = {
 class TransformationsParserTest(unittest.TestCase):
     def test__parse_field(self):
         config = TransformationsParserConfig(CONFIG_PATH)
-        parser = TransformationsParser(config)
+        parser = TransformationsParser(config.content["processing"]["transformation"])
 
         result = parser._parse("sample_rating")
         self.assertIsInstance(result, str, "Result should be instance of string")
@@ -45,7 +45,7 @@ class TransformationsParserTest(unittest.TestCase):
 
     def test__parse_simple_operation(self):
         config = TransformationsParserConfig(CONFIG_PATH)
-        parser = TransformationsParser(config)
+        parser = TransformationsParser(config.content["processing"]["transformation"])
 
         expression = "sum({})".format(",".join(stub["sum"]))
 
@@ -62,7 +62,7 @@ class TransformationsParserTest(unittest.TestCase):
 
     def test__parse_nested_operations(self):
         config = TransformationsParserConfig(CONFIG_PATH)
-        parser = TransformationsParser(config)
+        parser = TransformationsParser(config.content["processing"]["transformation"])
 
         expression = "minus(mult({}),mult({},sum({})))".format(",".join(stub["first_mult"]), stub["second_mult"][0],
                                                                ",".join(stub["second_mult"][1]))
@@ -111,14 +111,14 @@ class TransformationsParserTest(unittest.TestCase):
 
     def test__parse_raise_incorrect_expression_error(self):
         config = TransformationsParserConfig(CONFIG_PATH)
-        parser = TransformationsParser(config)
+        parser = TransformationsParser(config.content["processing"]["transformation"])
 
         with self.assertRaises(errors.IncorrectExpression):
             parser._parse("sum((1,2)")
 
     def test_run(self):
         config = TransformationsParserConfig(CONFIG_PATH)
-        parser = TransformationsParser(config)
+        parser = TransformationsParser(config.content["processing"]["transformation"])
 
         parser.run()
 

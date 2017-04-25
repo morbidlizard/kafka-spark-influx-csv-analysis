@@ -3,7 +3,7 @@ import re
 import pyspark.sql.types as types
 
 import errors
-from config_parsing.transformations_parser import FieldTransformation
+from .transformations_parser import FieldTransformation
 
 OPERATIONS = {
     "sum": {
