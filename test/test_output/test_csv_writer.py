@@ -20,7 +20,7 @@ class CSVWriterTestCase(unittest.TestCase):
         self.assertEqual(writer.path, INPUT_PATH, "Path to file should be data/test_input.csv")
 
 
-    def test_write(self):
+    def test_write_rdd(self):
         writer = CSVWriter(OUTPUT_PATH, ";", "utf-8")
 
         spark = SparkSession\
@@ -30,7 +30,40 @@ class CSVWriterTestCase(unittest.TestCase):
 
         dataframe = spark.read.csv(INPUT_PATH)
 
-        writer.write(dataframe)
+        writer.write(dataframe.rdd)
+        spark.stop()
+
+        self.assertTrue(os.path.exists(OUTPUT_PATH), "Output file 'test_output.csv' should be created")
+        self.assertGreater(os.stat(OUTPUT_PATH).st_size, 0, "File should be not empty" )
+
+    def test_write_tuple(self):
+        writer = CSVWriter(OUTPUT_PATH, ";", "utf-8")
+
+        spark = SparkSession\
+            .builder\
+            .appName("LinesWriter")\
+            .getOrCreate()
+
+        dataframe = spark.read.csv(INPUT_PATH)
+
+        args = ("first", "second", "third")
+        writer.write(args)
+        spark.stop()
+
+        self.assertTrue(os.path.exists(OUTPUT_PATH), "Output file 'test_output.csv' should be created")
+        self.assertGreater(os.stat(OUTPUT_PATH).st_size, 0, "File should be not empty" )
+
+    def test_write_number(self):
+        writer = CSVWriter(OUTPUT_PATH, ";", "utf-8")
+
+        spark = SparkSession\
+            .builder\
+            .appName("LinesWriter")\
+            .getOrCreate()
+
+        dataframe = spark.read.csv(INPUT_PATH)
+
+        writer.write(45)
         spark.stop()
 
         self.assertTrue(os.path.exists(OUTPUT_PATH), "Output file 'test_output.csv' should be created")
