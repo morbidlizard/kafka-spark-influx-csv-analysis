@@ -13,11 +13,16 @@ class CSVWriter(OutputWriter):
         self.encoding = encoding
         self.spark = SparkSession.builder.getOrCreate()
 
-    def write(self, rdd_or_object):
-        if isinstance(rdd_or_object, pyspark.rdd.RDD):
-            data = self.spark.createDataFrame(rdd_or_object).toPandas()
-        else:
-            data = pandas.DataFrame.from_records(
-                [rdd_or_object] if isinstance(rdd_or_object, Iterable) else [(rdd_or_object,)])
+    def get_write_lambda(self):
+        def make_data(rdd_or_object):
+            if isinstance(rdd_or_object, pyspark.rdd.RDD):
+                data = self.spark.createDataFrame(rdd_or_object).toPandas()
+            else:
+                data = pandas.DataFrame.from_records(
+                    [rdd_or_object] if isinstance(rdd_or_object, Iterable) else [(rdd_or_object,)])
 
-        data.to_csv(self.path, self.sep, self.encoding)
+            return data
+
+        path, sep, encoding = self.path, self.sep, self.encoding
+
+        return lambda rdd_or_object: make_data(rdd_or_object).to_csv(path, sep, encoding, header=False, index=False)

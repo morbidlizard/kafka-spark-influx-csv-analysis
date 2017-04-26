@@ -18,8 +18,8 @@
   "processing": {
     "transformation": "source_ip: src_ip; dst_ip;src_country: country_of(src_ip);traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
-			"operation_type": "reduceByKey",
- 			"rule": "Min(traffic), key = source_ip, Sum(traffic)"
+			"operation_type": "reduce",
+ 			"rule": "Min(traffic), Sum(traffic)"
 		}
   }
 }
