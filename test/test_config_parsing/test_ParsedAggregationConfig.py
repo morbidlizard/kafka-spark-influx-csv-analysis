@@ -145,7 +145,7 @@ class TestAggregationsParser(TestCase):
                                                                              {"input_field": "test2", "key": False}]),
                         "Return value should be false if the input list contain key fields with true value")
 
-    def test__pars_reduce_by_key(self):
+    def test__parse_reduce_by_key(self):
         test_input_rule = "key = field_name1, Count(field_name2), Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
@@ -222,7 +222,7 @@ class TestAggregationsParser(TestCase):
         self.assertTrue("Error in the rule" in context.exception.args[0],
                         "Catch exception, but it differs from test exception")
 
-    def test__pars_expression(self):
+    def test__parse_expression(self):
         test_input_rule = "key = field_name1,Count(field_name2), Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
