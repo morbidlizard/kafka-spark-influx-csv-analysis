@@ -42,7 +42,6 @@ class AggregationsParser:
         The method validates parse expression on types, fields name and function names
         :return: return true if list of dictionaries is valid and false at other case
         """
-
         # check function name
         reduce_operation = SupportedReduceOperations()
         set_expression_functions = set(x['func_name'] for x in self._expression if not x['key'])
@@ -50,15 +49,24 @@ class AggregationsParser:
         set_expression_fields = set(map(lambda x: x['input_field'], self._expression))
         set_input_fields_data_structure = set(map(lambda x: x.name, self._input_data_structure))
         dict_input_field_type = dict(map(lambda x: [x.name, x.dataType], self._input_data_structure))
+        # check unsupported function
 
         if set_expression_functions - set_support_functions:
             return False
 
-        if set_expression_fields - set_input_fields_data_structure:
+        # check unsupported field
+        if set_expression_fields != set_input_fields_data_structure:
             return False
 
+        already_aggregated = []
         for field in self._expression:
             if not field['key']:
+                # We should raise error if field already aggregated
+                if field["input_field"] not in already_aggregated:
+                    already_aggregated.append(field["input_field"])
+                else:
+                    return False
+
                 if dict_input_field_type[field['input_field']] in reduce_operation.numeric_types:
                     if not reduce_operation.check_type_arg_function(dict_input_field_type[field['input_field']],
                                                                     field['func_name']):
@@ -67,6 +75,7 @@ class AggregationsParser:
                     if dict_input_field_type[field['input_field']] != \
                             reduce_operation.operation[field['func_name']]['input_type']:
                         return False
+
         return True
 
     def get_parse_expression(self):

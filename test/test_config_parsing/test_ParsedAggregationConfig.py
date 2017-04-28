@@ -40,11 +40,11 @@ class TestConfig():
 
 class TestAggregationsParser(TestCase):
     def test_get_parse_expression(self):
-        test_input_rule = "key = input_port,Min(packet_size), Sum(packet_size)"
+        test_input_rule = "key = input_port, Sum(packet_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, StructType([input_port,packet_size,]))
         test_expression_token = test_aggregation_config.get_parse_expression()
         self.assertIsInstance(test_expression_token, dict,
                               "Return value of the get_parse_expression method should be instance of dict")
@@ -253,23 +253,12 @@ class TestAggregationsParser(TestCase):
                         "Catch exception, but it differs from test exception")
 
     def test__types_and_fields_validation(self):
-        test_input_rule = "key = input_port,Min(in_vlan), Sum(ip_size)"
-        test_input_operation = "reduceByKey"
-        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
-                                                             "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
-        test_validation = test_aggregation_config._types_and_field_names_validation()
-
-        self.assertIsInstance(test_validation, bool,
-                              "Return value of the _types_and_field_names_validation method should be instance of bool")
-        self.assertTrue(test_validation, "Return value should be true for correct config")
-
         # test wrong  function name
         test_input_rule = "key = input_port,Sin(in_vlan), Sum(ip_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, StructType([input_port,in_vlan,ip_size]))
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
         test_validation = test_aggregation_config._types_and_field_names_validation()
         self.assertFalse(test_validation, "Return value should be false for incorrect name function")
@@ -289,8 +278,18 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, StructType([input_port,dst_mac,ip_size]))
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
         test_validation = test_aggregation_config._types_and_field_names_validation()
 
         self.assertFalse(test_validation, "Return value should be false for incorrect type of field")
+
+    def test__already_aggregated_field(self):
+        test_input_rule = "key = src_ip, Max(packet_size), Min(packet_size)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, StructType([src_ip, packet_size]))
+        test_aggregation_config._expression = test_aggregation_config._parse_expression()
+        test_validation = test_aggregation_config._types_and_field_names_validation()
+        self.assertFalse(test_validation, "Return value should be false for incorrect name function")
