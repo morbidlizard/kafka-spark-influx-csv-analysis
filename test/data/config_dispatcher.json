@@ -2,7 +2,7 @@
   "input": {
     "input_type": "csv",
     "options": {
-    "filename": "test/data/test.csv"
+    "filename": "data/test.csv"
     }
   },
   "output": {
