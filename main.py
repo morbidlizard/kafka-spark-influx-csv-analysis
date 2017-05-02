@@ -4,7 +4,7 @@ from dispatcher.dispatcher import Dispatcher
 
 if __name__ == "__main__":
     try:
-        config = Config("config.json")
+        config = Config("config2.json")
         dispatcher = Dispatcher(config)
         dispatcher.run_pipeline()
     except BaseException as ex:

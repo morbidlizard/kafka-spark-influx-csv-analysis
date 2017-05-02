@@ -9,17 +9,17 @@
     "method": "csv",
     "options": {
       "csv": {
-        "path": "1.csv",
+        "path": "2.csv",
         "encoding": "utf-8",
         "sep": ";"
       }
     }
   },
   "processing": {
-    "transformation": "packet_size;traffic: mult(packet_size,sampling_rate)",
+    "transformation": "src_ip;packet_size;traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
-			"operation_type": "reduce",
-              "rule": " Max(packet_size), Max(traffic)"
+			"operation_type": "reduceByKey",
+              "rule": "key = src_ip, Max(packet_size), Sum(traffic)"
 		}
   }
 }
