@@ -56,16 +56,14 @@ class TestAggregationsParser(TestCase):
                            "The dictionary should be contain not empty pair 'rule':list of token")
 
         # test exception to incorrect type,function name or field name
-        test_input_rule = "key = field_name1,Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "key = field_name1, Count(field_name2), Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
         test_aggregation_config = AggregationsParser(config, data_struct)
 
-        with self.assertRaises(NotValidAggregationExpression) as context:
+        with self.assertRaisesRegexp(NotValidAggregationExpression, "^Unsupported function\(s\): {'Count'}$"):
             test_expression_token = test_aggregation_config.get_parse_expression()
-        self.assertTrue("Not valid function name" in context.exception.args[0],
-                        "Catch exception, but it differs from test exception")
 
     def test__field_validation(self):
         config = TestConfig({"processing": {"aggregations": {"operation_type": "",
@@ -252,7 +250,7 @@ class TestAggregationsParser(TestCase):
         self.assertTrue("The operation" in context.exception.args[0],
                         "Catch exception, but it differs from test exception")
 
-    def test__types_and_fields_validation(self):
+    def test__types_and_fields_validation_raise_wrong_function_exception(self):
         # test wrong  function name
         test_input_rule = "key = input_port,Sin(in_vlan), Sum(ip_size)"
         test_input_operation = "reduceByKey"
@@ -260,19 +258,34 @@ class TestAggregationsParser(TestCase):
                                                              "rule": test_input_rule}}})
         test_aggregation_config = AggregationsParser(config, StructType([input_port,in_vlan,ip_size]))
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
-        test_validation = test_aggregation_config._types_and_field_names_validation()
-        self.assertFalse(test_validation, "Return value should be false for incorrect name function")
 
+        with self.assertRaisesRegex(NotValidAggregationExpression, "^Unsupported function\(s\): {'Sin'}$"):
+            test_validation = test_aggregation_config._types_and_field_names_validation()
+
+    def test__types_and_fields_validation_raise_wrong_field_name_exception(self):
         # test wrong field name
         test_input_rule = "key = input_port,Min(in_vlan_bad), Sum(ip_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
-                                                             "rule": test_input_rule}}})
+                                                         "rule": test_input_rule}}})
         test_aggregation_config = AggregationsParser(config, data_struct)
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
-        test_validation = test_aggregation_config._types_and_field_names_validation()
-        self.assertFalse(test_validation, "Return value should be false for incorrect field name")
 
+        with self.assertRaisesRegex(NotValidAggregationExpression, "^Unsupported or unused field\(s\): {'in_vlan_bad'}$"):
+            test_validation = test_aggregation_config._types_and_field_names_validation()
+
+    def test__types_and_fields_validation_raise_already_aggregated_field_exception(self):
+        test_input_rule = "key = src_ip, Max(packet_size), Min(packet_size)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, StructType([src_ip, packet_size]))
+        test_aggregation_config._expression = test_aggregation_config._parse_expression()
+
+        with self.assertRaisesRegex(NotValidAggregationExpression, "^Aggregate already aggregated field packet_size$"):
+            test_validation = test_aggregation_config._types_and_field_names_validation()
+
+    def test__types_and_fields_validation_raise_wrong_field_type_exception(self):
         # test wrong  type of field
         test_input_rule = "key = input_port,Min(dst_mac), Sum(ip_size)"
         test_input_operation = "reduceByKey"
@@ -280,16 +293,6 @@ class TestAggregationsParser(TestCase):
                                                              "rule": test_input_rule}}})
         test_aggregation_config = AggregationsParser(config, StructType([input_port,dst_mac,ip_size]))
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
-        test_validation = test_aggregation_config._types_and_field_names_validation()
 
-        self.assertFalse(test_validation, "Return value should be false for incorrect type of field")
-
-    def test__already_aggregated_field(self):
-        test_input_rule = "key = src_ip, Max(packet_size), Min(packet_size)"
-        test_input_operation = "reduceByKey"
-        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
-                                                             "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, StructType([src_ip, packet_size]))
-        test_aggregation_config._expression = test_aggregation_config._parse_expression()
-        test_validation = test_aggregation_config._types_and_field_names_validation()
-        self.assertFalse(test_validation, "Return value should be false for incorrect name function")
+        with self.assertRaisesRegex(NotValidAggregationExpression, "^Incorrect type of field dst_mac for function Min$"):
+            test_validation = test_aggregation_config._types_and_field_names_validation()
