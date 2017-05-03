@@ -51,12 +51,13 @@ class AggregationsParser:
         dict_input_field_type = dict(map(lambda x: [x.name, x.dataType], self._input_data_structure))
         # check unsupported function
 
-        if set_expression_functions - set_support_functions:
-            return False
+        unsupported_functions = set_expression_functions - set_support_functions
+        if unsupported_functions:
+            raise NotValidAggregationExpression("Unsupported function(s): {}".format(unsupported_functions))
 
-        # check unsupported field
         if set_expression_fields != set_input_fields_data_structure:
-            return False
+            raise NotValidAggregationExpression(
+                "Unsupported or unused field(s): {}".format(set_expression_fields - set_input_fields_data_structure))
 
         already_aggregated = []
         for field in self._expression:
@@ -65,18 +66,21 @@ class AggregationsParser:
                 if field["input_field"] not in already_aggregated:
                     already_aggregated.append(field["input_field"])
                 else:
-                    return False
+                    raise NotValidAggregationExpression("Aggregate already aggregated field {}".format(
+                        field["input_field"]))
 
                 if dict_input_field_type[field['input_field']] in reduce_operation.numeric_types:
                     if not reduce_operation.check_type_arg_function(dict_input_field_type[field['input_field']],
                                                                     field['func_name']):
-                        return False
+                        raise NotValidAggregationExpression(
+                            "Incorrect type of field {} for function {}".format(field['input_field'],
+                                                                                field['func_name']))
                 else:
                     if dict_input_field_type[field['input_field']] != \
                             reduce_operation.operation[field['func_name']]['input_type']:
-                        return False
-
-        return True
+                        raise NotValidAggregationExpression(
+                            "Incorrect type of field {} for function {}".format(field['input_field'],
+                                                                                field['func_name']))
 
     def get_parse_expression(self):
         """
@@ -85,11 +89,9 @@ class AggregationsParser:
                 include next field: function = field with function, input_field = input field name from source data.
         """
         self._expression = self._parse_expression()
-        if self._types_and_field_names_validation():
-            return {"operation_type": self._config["operation_type"], "rule": self._expression}
-        else:
-            raise NotValidAggregationExpression("Error: Not valid function name, field name or type input field for "
-                                                "function")
+        self._types_and_field_names_validation()
+
+        return {"operation_type": self._config["operation_type"], "rule": self._expression}
 
     def _field_validation(self, re_match_list, field):
         """
