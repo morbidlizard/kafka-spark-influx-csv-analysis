@@ -32,6 +32,11 @@ class AggregationProcessor:
         return lambda row: (row[key_index],
                             row[:key_index] if key_index == len(row) - 1 else row[:key_index] + row[key_index + 1:])
 
+    # input row: (key, (field_1,..field_n)) -> (key,field_1,..,field_n)
+    def _bulid_postprocessing_lambda(self):
+        postprocessing = lambda row: tuple([row[0]]) + row[1][:]
+        return lambda rdd: rdd.map(postprocessing)
+
     # apply separate key lambda to rdd
     def _get_separate_key_lambda(self):
         separate_key_lambda = self._bulid_separate_key_lambda()
@@ -57,7 +62,9 @@ class AggregationProcessor:
         if self.key_data:
             separator = self._get_separate_key_lambda()
             aggregation = self._make_reduce_by_key_aggregation()
-            return lambda rdd: aggregation(separator(rdd))
+            postprocessing = self._bulid_postprocessing_lambda()
+            return lambda rdd: postprocessing(aggregation(separator(rdd)))
 
         aggregation = self.build_aggregation_lambda()
-        return lambda rdd: rdd.reduce(aggregation)
+        return lambda rdd: rdd.reduce(aggregation) if not rdd.isEmpty() else rdd
+        #return lambda rdd: rdd.reduce(aggregation)

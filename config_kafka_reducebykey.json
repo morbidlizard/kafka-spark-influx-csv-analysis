@@ -10,7 +10,7 @@
     }
   },
   "output": {
-    "method": "csv",
+    "method": "stdout",
     "options": {
       "csv": {
         "path": "4.csv",

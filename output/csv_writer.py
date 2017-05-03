@@ -16,7 +16,10 @@ class CSVWriter(OutputWriter):
     def get_write_lambda(self):
         def make_data(rdd_or_object):
             if isinstance(rdd_or_object, pyspark.rdd.RDD):
-                data = self.spark.createDataFrame(rdd_or_object).toPandas()
+                if not rdd_or_object.isEmpty():
+                    data = self.spark.createDataFrame(rdd_or_object).toPandas()
+                else:
+                    data = pandas.DataFrame([])
             else:
                 data = pandas.DataFrame.from_records(
                     [rdd_or_object] if isinstance(rdd_or_object, Iterable) else [(rdd_or_object,)])
