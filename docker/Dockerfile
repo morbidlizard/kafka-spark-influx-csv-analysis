@@ -15,7 +15,6 @@ RUN python -m pip install --upgrade pip requests
 
 RUN apt-get --assume-yes install wget pandoc && \\
 python -m pip install nose pypandoc && \\
-python -m pip install pandas && \\
 wget http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz && \\
 tar -xvf spark-2.1.0-bin-hadoop2.7.tgz && \\
 cd spark-2.1.0-bin-hadoop2.7/python/ && \\
