@@ -18,3 +18,6 @@ class Dispatcher:
 
         self.executor.set_pipeline_processing(pipeline)
         self.executor.run_pipeline()
+
+    def stop_pipeline(self):
+        self.executor.stop_pipeline()

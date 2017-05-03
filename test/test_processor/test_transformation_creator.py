@@ -6,6 +6,7 @@ from pyspark.sql import SparkSession
 
 from processor.transformation_creator import TransformationCreator
 from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
+from input.input_module import data_struct
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "test.csv"))
 
@@ -30,7 +31,7 @@ class TransformationCreatorTestCase(TestCase):
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")
 
         spark = SparkSession.builder.getOrCreate()
-        file = spark.read.csv(DATA_PATH)
+        file = spark.read.csv(DATA_PATH, data_struct)
 
         result = file.rdd.map(transformation)
 
@@ -51,7 +52,7 @@ class TransformationCreatorTestCase(TestCase):
 
         root_mult_st = SyntaxTree()
         root_mult_st.operation = "mult"
-        root_mult_st.children = [mult_syntax_tree, "10"]
+        root_mult_st.children = [mult_syntax_tree, "sampling_rate"]
 
         country_of_syntax_tree = SyntaxTree()
         country_of_syntax_tree.operation = "country_of"
@@ -67,17 +68,17 @@ class TransformationCreatorTestCase(TestCase):
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")
 
         spark = SparkSession.builder.getOrCreate()
-        file = spark.read.csv(DATA_PATH)
+        file = spark.read.csv(DATA_PATH, data_struct)
 
         result = file.rdd.map(transformation)
 
         result = result.collect()
 
-        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 'USA', 378880),
-                                      ("91.221.61.168", "90.188.114.141", 'USA', 348160),
-                                      ("91.226.13.80", "5.136.78.36", 'USA', 7731200),
-                                      ("192.168.30.2", "192.168.30.1", 'USA', 947200),
-                                      ("192.168.30.2", "192.168.30.1", 'USA', 947200)],
+        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 'USA', 37888*512),
+                                      ("91.221.61.168", "90.188.114.141", 'USA', 34816*512),
+                                      ("91.226.13.80", "5.136.78.36", 'USA', 773120*512),
+                                      ("192.168.30.2", "192.168.30.1", 'USA', 94720*512),
+                                      ("192.168.30.2", "192.168.30.1", 'USA', 94720*512)],
                              "List of tuples should be equal")
 
         spark.stop()

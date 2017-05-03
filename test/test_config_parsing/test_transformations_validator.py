@@ -86,11 +86,11 @@ class TransformationsValidatorTestCase(unittest.TestCase):
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "sum"
-        syntaxtree.children = ["1", "2"]
+        syntaxtree.children = ["sampling_rate", "packet_size"]
 
         main_syntax_tree = SyntaxTree()
         main_syntax_tree.operation = "mult"
-        main_syntax_tree.children = [syntaxtree, "1"]
+        main_syntax_tree.children = [syntaxtree, "sampling_rate"]
 
         fields = validator.validate([FieldTransformation("result", main_syntax_tree), "dst_ip"])
 
@@ -98,6 +98,20 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             types.StructField('result', types.LongType()),
             types.StructField('dst_ip', types.StringType())
         ]))
+
+    def test_validate_raise_constant_not_supported_error_for_subtree(self):
+        validator = TransformatoinsValidator()
+
+        syntaxtree = SyntaxTree()
+        syntaxtree.operation = "sum"
+        syntaxtree.children = ["1", "2"]
+
+        main_syntax_tree = SyntaxTree()
+        main_syntax_tree.operation = "mult"
+        main_syntax_tree.children = [syntaxtree, "1"]
+
+        with self.assertRaises(NotImplementedError):
+            validator.validate([FieldTransformation("result", main_syntax_tree), "dst_ip"])
 
     def test_validate_raise_operation_not_supported_error_for_subtree(self):
         validator = TransformatoinsValidator()
