@@ -146,6 +146,6 @@ class TestAggregationProcessor(TestCase):
         aggregation_lambda = aggregation_processor.get_aggregation_lambda()
         result = aggregation_lambda(rdd)
         self.assertListEqual(result.collect(),
-                             [("192.168.30.2", (1900, 60000)),("217.69.143.60", (200, 8000))],
+                             [("192.168.30.2", 1900, 60000),("217.69.143.60", 200, 8000)],
                              "Lists should be equal")
         spark.stop()
