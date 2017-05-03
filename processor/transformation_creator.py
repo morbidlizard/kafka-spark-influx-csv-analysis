@@ -30,10 +30,10 @@ class TransformationCreator:
 
         self.operations = {
             "country_of": lambda ip: "USA",
-            "sum": lambda x, y: int(x) + int(y),
-            "mult": lambda x, y: int(x) * int(y),
-            "div": lambda x, y: int(x) / int(y),
-            "minus": lambda x, y: int(x) - int(y)
+            "sum": lambda x, y: x + y,
+            "mult": lambda x, y: x * y,
+            "div": lambda x, y: x / y,
+            "minus": lambda x, y: x - y
         }
 
     def __generate_params_list(self, children, row):

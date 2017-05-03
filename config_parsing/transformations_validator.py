@@ -80,7 +80,8 @@ class TransformatoinsValidator:
                     if isinstance(ch, str):  # number or field name
                         result = re.search('^(\d+)$', ch)
                         if result is not None:  # it's number
-                            actual_type = types.LongType()
+                            # actual_type = types.LongType()
+                            raise NotImplementedError("Numbers as arguments of operation not supported now")
                         else:  # it's field
                             renamed_field = self.__get_field(ch)
                             actual_type = renamed_field.dataType

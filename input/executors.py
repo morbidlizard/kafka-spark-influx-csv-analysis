@@ -6,12 +6,13 @@ class Executor:
     Basic class for Executor classes
     """
 
-    def __init__(self, input_data):
+    def __init__(self, input_data, ssc=None):
         """
         Create Executor and set initial data for executor
         :param input_data: Data of RDD or Dstream class
         """
         self._data = input_data
+        self._ssc = ssc
         self._action = None
         self._options = None
         self._result = None
@@ -21,6 +22,14 @@ class Executor:
         run_pipeline runs execution of pipeline actions on the data
         :return: None
         """
+        print("Override me in child classes!")
+
+    def stop_pipeline(self):
+        """
+        run_pipeline runs execution of pipeline actions on the data
+        :return: None
+        """
+        print("Override me in child classes!")
 
     def set_pipeline_processing(self, action, options):
         """
@@ -46,6 +55,7 @@ class StreamingExecutor(Executor):
             self._data.foreachRDD(self._action)
         else:
             raise ExecutorError("Error: action and options don't set. Use set_pipeline_processing")
+        self._ssc.start()
 
     def set_pipeline_processing(self, action, options={}):
         """
@@ -58,6 +68,8 @@ class StreamingExecutor(Executor):
         self._action = action
         self._options = options
 
+    def stop_pipeline(self):
+        self._ssc.stop(stopSparkContext=True, stopGraceFully=True)
 
 class BatchExecutor(Executor):
     """
@@ -83,3 +95,6 @@ class BatchExecutor(Executor):
         """
         self._action = action
         self._options = options
+
+    def stop_pipeline(self):
+        pass

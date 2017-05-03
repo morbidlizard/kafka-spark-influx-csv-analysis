@@ -22,6 +22,8 @@ class NotValidAggregationExpression(BaseException):
 class InputError(BaseException):
     pass
 
-
 class ExecutorError(BaseException):
+    pass
+
+class KafkaConnectError(BaseException):
     pass

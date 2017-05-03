@@ -37,7 +37,7 @@ class TestStreamingExecutor(TestCase):
                               "test_executor should be instance of BatchExecutor")
 
     def test_run_pipeline(self):
-        test_executor = StreamingExecutor(self._test_stream)
+        test_executor = StreamingExecutor(self._test_stream, self._ssc)
         test_executor.set_pipeline_processing(lambda rdd: help_accumulator(rdd, sum_elements, num_zero_rdd))
         test_executor.run_pipeline()
         sum_elements = self._spark.sparkContext.accumulator(0)

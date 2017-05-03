@@ -25,4 +25,5 @@ class CSVWriter(OutputWriter):
 
         path, sep, encoding = self.path, self.sep, self.encoding
 
-        return lambda rdd_or_object: make_data(rdd_or_object).to_csv(path, sep, encoding, header=False, index=False)
+        return lambda rdd_or_object: make_data(rdd_or_object).to_csv(path, sep, encoding, header=False, index=False,
+                                                                     mode="a")

@@ -1,0 +1,29 @@
+{
+  "input": {
+    "input_type": "kafka",
+    "options": {
+      "server": "localhost",
+      "port": 29092,
+      "topic": "test1",
+      "batchDuration": 4,
+      "sep": ","
+    }
+  },
+  "output": {
+    "method": "csv",
+    "options": {
+      "csv": {
+        "path": "4.csv",
+        "encoding": "utf-8",
+        "sep": ";"
+      }
+    }
+  },
+  "processing": {
+    "transformation": "src_ip;packet_size;traffic: mult(packet_size,sampling_rate)",
+    "aggregations": {
+			"operation_type": "reduceByKey",
+              "rule": "key = src_ip, Max(packet_size), Sum(traffic)"
+		}
+  }
+}
