@@ -20,4 +20,3 @@ if __name__ == "__main__":
     except BaseException as ex:
         logging.exception(ex)
         exit(1)
-

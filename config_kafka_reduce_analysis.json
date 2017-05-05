@@ -1,26 +1,30 @@
 {
   "input": {
-    "input_type": "csv",
+    "input_type": "kafka",
     "options": {
-    "filename": "test/data/test.csv"
+      "server": "localhost",
+      "port": 29092,
+      "topic": "test3",
+      "batchDuration": 4,
+      "sep": ","
     }
   },
   "output": {
-    "method": "csv",
+    "method": "stdout",
     "options": {
       "csv": {
-        "path": "1.csv",
+        "path": "3.csv",
         "encoding": "utf-8",
         "sep": ";"
       }
     }
   },
   "processing": {
-    "transformation": " packet_size; traffic: mult(packet_size,sampling_rate)",
+    "transformation": "packet_size;traffic: mult(packet_size,sampling_rate);ip_size;ip_size_sum:ip_size",
     "aggregations": {
-			"operation_type": "reduce",
- 			"rule": "Min(packet_size), Sum(traffic)"
-		}
+      "operation_type": "reduce",
+      "rule": " Max(packet_size), Sum(traffic), Min(ip_size), Sum(ip_size_sum)"
+    }
   },
   "analysis": {
     "historical": {
