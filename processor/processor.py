@@ -8,6 +8,8 @@ class Processor:
 
         aggregation_processor = AggregationProcessor(config, transformation_processor.fields)
 
+        # for example: max_packet_size, sum_traffic
+        self.aggregation_output_struct = ["{0}_{1}".format(aggr.lower(), field) for field, aggr in aggregation_processor._field_to_func_name.items()]
         self.aggregation = aggregation_processor.get_aggregation_lambda()
 
 
