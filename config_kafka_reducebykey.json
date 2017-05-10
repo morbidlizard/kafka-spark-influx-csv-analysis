@@ -4,7 +4,7 @@
     "options": {
       "server": "localhost",
       "port": 29092,
-      "topic": "test1",
+      "topic": "test3",
       "batchDuration": 4,
       "sep": ","
     }
