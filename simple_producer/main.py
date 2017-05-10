@@ -33,7 +33,7 @@ if __name__ == "__main__":
             print("additional parameters --random_data=True --data_file='sflow.csv' --continuously=True")
             sys.exit()
         elif opt in ("-d", "--delay"):
-            delay = int(arg)
+            delay = float(arg)
         elif opt in ("-t", "--topic"):
             topic = arg
         elif opt in ("-s", "--server"):
