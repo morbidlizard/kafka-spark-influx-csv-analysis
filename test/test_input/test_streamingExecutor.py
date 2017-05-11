@@ -1,64 +1,42 @@
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
-
+from pyspark.streaming import DStream
 from errors import ExecutorError
 from input.executors import StreamingExecutor
 
 
-def help_accumulator(rdd, sum_elements, num_zero_rdd):
-    rdd.foreach(lambda x: sum_elements.add(x))
-    num_zero_rdd.add(rdd.count())
-
-
 class TestStreamingExecutor(TestCase):
-    def setUp(self):
-        conf = SparkConf().setAppName("UnitTest")
-        # self._sc = SparkContext(conf=conf)
-        self._spark = SparkSession.builder \
-            .appName("TestStreamingExecutor") \
-            .getOrCreate()
-
-        self._ssc = StreamingContext(self._spark.sparkContext, 1)
-        rdd_queue = []
-        for i in range(3):
-            rdd_queue += [self._ssc.sparkContext.parallelize([j for j in range(1, 5)], 5)]
-        test_dstream = self._ssc.queueStream(rdd_queue)
-        self._test_stream = self._ssc.queueStream(rdd_queue)
-
-    def tearDown(self):
-        self._spark.stop()
-
-    def test___init__(self):
-        test_executor = StreamingExecutor(self._test_stream)
-        self.assertIsInstance(test_executor, StreamingExecutor,
-                              "test_executor should be instance of BatchExecutor")
-
-    def test_run_pipeline(self):
-        test_executor = StreamingExecutor(self._test_stream, self._ssc)
-        test_executor.set_pipeline_processing(lambda rdd: help_accumulator(rdd, sum_elements, num_zero_rdd))
+    @mock.patch('pyspark.streaming.DStream')
+    @mock.patch('pyspark.streaming.StreamingContext')
+    def test_run_pipeline(self, mock_streaming_context, mock_dstream):
+        test_executor = StreamingExecutor(mock_dstream, mock_streaming_context)
+        test_function = lambda rdd: rdd
+        test_executor.set_pipeline_processing(test_function)
         test_executor.run_pipeline()
-        sum_elements = self._spark.sparkContext.accumulator(0)
-        num_zero_rdd = self._spark.sparkContext.accumulator(0)
 
-        self._ssc.start()
-        while num_zero_rdd.value == 0:
-            pass
-        self._ssc.stop(stopSparkContext=True, stopGraceFully=True)
+        mock_dstream.foreachRDD.assert_called_with(test_function)
 
-        self.assertEqual(sum_elements.value, 30, "Result should be equal 30 (The elements sum of all RDD in dstream)")
-
+        self.assertTrue(mock_streaming_context.start.called, "Failed streaming. The method 'start' didn't call.")
+        self.assertTrue(mock_streaming_context.awaitTermination.called,
+                        "Failed streaming. The method 'awaitTermination' didn't call.")
         test_executor.set_pipeline_processing(None)
         with self.assertRaises(ExecutorError) as context:
-            number_record = test_executor.run_pipeline()
+            test_executor.run_pipeline()
 
         self.assertTrue("action and options" in context.exception.args[0],
                         "Catch exception, but it differs from test exception")
 
-    def test_set_pipeline_processing(self):
-        test_executor = StreamingExecutor(self._test_stream)
-        test_executor.set_pipeline_processing(lambda x: x.count())
+    @mock.patch('pyspark.streaming.DStream')
+    @mock.patch('pyspark.streaming.StreamingContext')
+    def test_set_pipeline_processing(self, mock_streaming_context, mock_dstream):
+        test_executor = StreamingExecutor(mock_dstream, mock_streaming_context)
+        test_function = lambda x: x.count()
+        test_executor.set_pipeline_processing(test_function)
 
         self.assertTrue(test_executor._action, "action should be set in set_pipeline_processing")
+
+        self.assertEqual(test_function, test_executor._action,
+                         "field _action after set_pipeline_processing should be equal inpud action")

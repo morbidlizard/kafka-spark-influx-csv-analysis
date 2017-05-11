@@ -13,8 +13,10 @@ if __name__ == "__main__":
         config = Config(sys.argv[1].strip())
         dispatcher = Dispatcher(config)
         dispatcher.run_pipeline()
-        # time.sleep(10)
         dispatcher.stop_pipeline()
+    except KeyboardInterrupt:
+        logging.warning("You terminated execution.")
+        exit(2)
     except BaseException as ex:
         logging.exception(ex)
         exit(1)

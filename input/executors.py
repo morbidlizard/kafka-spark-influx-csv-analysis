@@ -56,6 +56,7 @@ class StreamingExecutor(Executor):
         else:
             raise ExecutorError("Error: action and options don't set. Use set_pipeline_processing")
         self._ssc.start()
+        self._ssc.awaitTermination()
 
     def set_pipeline_processing(self, action, options={}):
         """
@@ -70,6 +71,7 @@ class StreamingExecutor(Executor):
 
     def stop_pipeline(self):
         self._ssc.stop(stopSparkContext=True, stopGraceFully=True)
+
 
 class BatchExecutor(Executor):
     """
