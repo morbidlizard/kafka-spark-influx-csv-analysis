@@ -8,7 +8,7 @@ from .output_writer import OutputWriter
 
 class CSVWriter(OutputWriter):
     def __init__(self, path, sep=";", encoding="utf-8"):
-        OutputWriter.__init__(self, path)
+        self.path = path
         self.sep = sep
         self.encoding = encoding
         self.spark = SparkSession.builder.getOrCreate()

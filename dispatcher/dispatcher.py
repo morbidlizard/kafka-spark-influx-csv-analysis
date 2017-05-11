@@ -5,10 +5,8 @@ from output.writer_factory import WriterFactory
 class Dispatcher:
     def __init__(self, config):
         self.executor = ReadFactory(config).get_executor()
-        self.writer = WriterFactory().instance_writer(config)
-
         self.processor = Processor(config)
-
+        self.writer = WriterFactory().instance_writer(config, self.processor.aggregation_output_struct)
 
     def run_pipeline(self):
         processor_part = self.processor.get_pipeline_processing()

@@ -1,0 +1,28 @@
+  {
+  "input": {
+    "input_type": "csv",
+    "options": {
+    "filename": "test/data/test.csv"
+    }
+  },
+  "output": {
+    "method": "influx",
+    "options": {
+      "influx": {
+        "host": "localhost",
+        "port": 8086,
+        "username": "root",
+        "password": "root",
+        "database": "dev",
+        "measurement": "points"
+      }
+    }
+  },
+  "processing": {
+    "transformation": "src_ip;packet_size;traffic: mult(packet_size,sampling_rate)",
+    "aggregations": {
+			"operation_type": "reduceByKey",
+              "rule": "key = src_ip, Max(packet_size), Sum(traffic)"
+		}
+  }
+}

@@ -2,6 +2,7 @@ import os
 import unittest
 
 import errors
+
 from output.csv_writer import CSVWriter
 from output.output_config import OutputConfig
 from output.writer_factory import WriterFactory
@@ -14,7 +15,7 @@ class WriterFactoryTestCase(unittest.TestCase):
         factory = WriterFactory()
         config = OutputConfig(CONFIG_PATH)
 
-        writer = factory.instance_writer(config)
+        writer = factory.instance_writer(config,list())
         self.assertIsInstance(writer, CSVWriter,"Writer should be instance of CSVWriter")
 
     def test_unsupported_output_format_exception_instance_writer(self):
@@ -22,4 +23,4 @@ class WriterFactoryTestCase(unittest.TestCase):
         config = OutputConfig(INCORRECT_CONFIG_PATH)
 
         with self.assertRaises(errors.UnsupportedOutputFormat):
-            factory.instance_writer(config)
+            factory.instance_writer(config,list())
