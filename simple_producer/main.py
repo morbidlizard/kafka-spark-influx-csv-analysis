@@ -1,6 +1,4 @@
 import getopt
-import time
-from errno import EINTR
 
 from simple_producer.producer_sflow import ProducerSFLOW
 import sys
@@ -60,4 +58,5 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             producer_sflow.stop()
     else:
-        print("Error: set delay,topic and server")
+        print("Error: set delay,topic, server and type generation sflow")
+        print("Example: python main.py -d 1 -t test3 -s localhost:29092 -f ip.txt -r True")
