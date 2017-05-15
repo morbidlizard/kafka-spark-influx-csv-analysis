@@ -3,3 +3,4 @@ metastore_db/**
 **/__pycache__/**
 spark-warehouse/**
 *.log
+*.mmdb

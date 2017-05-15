@@ -26,7 +26,17 @@ OPERATIONS = {
         "type": types.LongType(),
         "result": types.LongType()
     },
-    "country_of": {
+    "country": {
+        "operands": 1,
+        "type": types.StringType(),
+        "result": types.StringType()
+    },
+    "city": {
+        "operands": 1,
+        "type": types.StringType(),
+        "result": types.StringType()
+    },
+    "aarea": {
         "operands": 1,
         "type": types.StringType(),
         "result": types.StringType()

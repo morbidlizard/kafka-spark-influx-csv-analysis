@@ -24,5 +24,10 @@
 			"operation_type": "reduceByKey",
               "rule": "key = src_ip; Max(packet_size); Sum(traffic)"
 		}
+  },
+  "databases": {
+    "country": "./GeoLite2-Country.mmdb",
+    "city": "./GeoLite2-City.mmdb",
+    "asn": "./GeoLite2-ASN.mmdb"
   }
 }
