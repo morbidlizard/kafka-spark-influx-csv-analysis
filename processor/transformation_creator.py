@@ -1,8 +1,8 @@
 from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
-
+from .geo_operations import country, city, aarea
 
 class TransformationCreator:
-    def __init__(self, parsed_transformation):
+    def __init__(self, parsed_transformation, geoip_paths):
         self.parsed_transformation = parsed_transformation
         self.mapping = {
             'timestamp': 0,
@@ -29,7 +29,9 @@ class TransformationCreator:
         }
 
         self.operations = {
-            "country_of": lambda ip: "USA",
+            "country": lambda ip: country(ip, geoip_paths["country"]),
+            "city": lambda ip: city(ip, geoip_paths["city"]),
+            "aarea": lambda ip: aarea(ip, geoip_paths["asn"]),
             "sum": lambda x, y: x + y,
             "mult": lambda x, y: x * y,
             "div": lambda x, y: x / y,

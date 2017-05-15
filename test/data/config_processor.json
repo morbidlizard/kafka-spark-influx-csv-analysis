@@ -21,5 +21,10 @@
 			"operation_type": "reduce",
  			"rule": "Min(packet_size); Sum(traffic)"
 		}
+  },
+  "databases": {
+    "country": "./Mock-GeoLite2-Country.mmdb",
+    "city": "./Mock-GeoLite2-City.mmdb",
+    "asn": "./Mock-GeoLite2-ASN.mmdb"
   }
 }

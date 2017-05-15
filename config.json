@@ -18,8 +18,13 @@
   "processing": {
     "transformation": "packet_size;traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
-			"operation_type": "reduce",
-              "rule": " Max(packet_size); Max(traffic)"
-		}
+      "operation_type": "reduce",
+      "rule": " Max(packet_size), Max(traffic)"
+	}
+  },
+  "databases": {
+    "country": "./GeoLite2-Country.mmdb",
+    "city": "./GeoLite2-City.mmdb",
+    "asn": "./GeoLite2-ASN.mmdb"
   }
 }

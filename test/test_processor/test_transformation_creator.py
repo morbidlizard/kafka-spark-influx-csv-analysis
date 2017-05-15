@@ -17,15 +17,12 @@ class TransformationCreatorTestCase(TestCase):
         mult_syntax_tree.operation = "mult"
         mult_syntax_tree.children = ["packet_size", "sampling_rate"]
 
-        country_of_syntax_tree = SyntaxTree()
-        country_of_syntax_tree.operation = "country_of"
-        country_of_syntax_tree.children = ["src_ip"]
-
         parsed_transformations = ["src_ip", FieldTransformation("destination_ip", "dst_ip"),
-                                  FieldTransformation("src_country", country_of_syntax_tree),
                                   FieldTransformation("traffic", mult_syntax_tree)]
 
-        creator = TransformationCreator(parsed_transformations)
+        creator = TransformationCreator(parsed_transformations, {"country": "./mock-country.mmdb",
+                                                                 "city": "./mock-city.mmdb",
+                                                                 "asn": "./mock-asn.mmdb"})
         transformation = creator.build_lambda()
 
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")
@@ -37,11 +34,11 @@ class TransformationCreatorTestCase(TestCase):
 
         result = result.collect()
 
-        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 'USA', 37888),
-                                      ("91.221.61.168", "90.188.114.141", 'USA', 34816),
-                                      ("91.226.13.80", "5.136.78.36", 'USA', 773120),
-                                      ("192.168.30.2", "192.168.30.1", 'USA', 94720),
-                                      ("192.168.30.2", "192.168.30.1", 'USA', 94720)], "List of tuples should be equal")
+        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 37888),
+                                      ("91.221.61.168", "90.188.114.141", 34816),
+                                      ("91.226.13.80", "5.136.78.36", 773120),
+                                      ("192.168.30.2", "192.168.30.1", 94720),
+                                      ("192.168.30.2", "192.168.30.1", 94720)], "List of tuples should be equal")
 
         spark.stop()
 
@@ -54,15 +51,12 @@ class TransformationCreatorTestCase(TestCase):
         root_mult_st.operation = "mult"
         root_mult_st.children = [mult_syntax_tree, "sampling_rate"]
 
-        country_of_syntax_tree = SyntaxTree()
-        country_of_syntax_tree.operation = "country_of"
-        country_of_syntax_tree.children = ["src_ip"]
-
         parsed_transformations = ["src_ip", FieldTransformation("destination_ip", "dst_ip"),
-                                  FieldTransformation("src_country", country_of_syntax_tree),
                                   FieldTransformation("traffic", root_mult_st)]
 
-        creator = TransformationCreator(parsed_transformations)
+        creator = TransformationCreator(parsed_transformations, {"country": "./mock-country.mmdb",
+                                                                 "city": "./mock-city.mmdb",
+                                                                 "asn": "./mock-asn.mmdb"})
         transformation = creator.build_lambda()
 
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")
@@ -74,11 +68,11 @@ class TransformationCreatorTestCase(TestCase):
 
         result = result.collect()
 
-        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 'USA', 37888*512),
-                                      ("91.221.61.168", "90.188.114.141", 'USA', 34816*512),
-                                      ("91.226.13.80", "5.136.78.36", 'USA', 773120*512),
-                                      ("192.168.30.2", "192.168.30.1", 'USA', 94720*512),
-                                      ("192.168.30.2", "192.168.30.1", 'USA', 94720*512)],
+        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 37888 * 512),
+                                      ("91.221.61.168", "90.188.114.141", 34816 * 512),
+                                      ("91.226.13.80", "5.136.78.36", 773120 * 512),
+                                      ("192.168.30.2", "192.168.30.1", 94720 * 512),
+                                      ("192.168.30.2", "192.168.30.1", 94720 * 512)],
                              "List of tuples should be equal")
 
         spark.stop()

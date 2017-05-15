@@ -39,5 +39,10 @@
       "packet_size": 5,
       "traffic": 15
     }
+  },
+  "databases": {
+    "country": "./Mock-GeoLite2-Country.mmdb",
+    "city": "./Mock-GeoLite2-City.mmdb",
+    "asn": "./Mock-GeoLite2-ASN.mmdb"
   }
 }

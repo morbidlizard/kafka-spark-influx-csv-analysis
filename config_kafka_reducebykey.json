@@ -4,8 +4,8 @@
     "options": {
       "server": "localhost",
       "port": 29092,
-      "topic": "demo2",
-      "batchDuration": 4,
+      "topic": "demo1",
+      "batchDuration": 2,
       "sep": ","
     }
   },
@@ -23,10 +23,15 @@
     }
   },
   "processing": {
-    "transformation": "src_ip;packet_size; src_mac; traffic: mult(packet_size,sampling_rate)",
+    "transformation": "src_country: country(src_ip);packet_size;traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
-			"operation_type": "reduceByKey",
-              "rule": "key = (src_ip,src_mac) ; Max(packet_size); Sum(traffic)"
-		}
+      "operation_type": "reduceByKey",
+      "rule": "key = (src_country, src_mac), Max(packet_size), Sum(traffic)"
+    }
+  },
+  "databases": {
+    "country": "./GeoLite2-Country.mmdb",
+    "city": "./GeoLite2-City.mmdb",
+    "asn": "./GeoLite2-ASN.mmdb"
   }
 }
