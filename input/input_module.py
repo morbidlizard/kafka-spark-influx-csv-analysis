@@ -49,6 +49,10 @@ def type_to_func(type_field):
     if type_field == StringType():
         return string_to_string
 
+def quiet_logs(sc):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org").setLevel(logger.Level.ERROR)
+    logger.LogManager.getLogger("akka").setLevel(logger.Level.ERROR)
 
 class InputConfig:
     """
@@ -103,6 +107,7 @@ class KafkaStreaming(object):
         self._sep = config["sep"]
         self._spark = SparkSession.builder.appName("StreamingDataKafka").getOrCreate()
         sc = self._spark.sparkContext
+        quiet_logs(sc)
         kafka_server = self._server + ":" + str(self._port)
         self._ssc = StreamingContext(sc, self._batchDuration)
         # self._dstream = KafkaUtils.createStream(ssc, kafka_server, "id-consumer", {self._topic: 1})

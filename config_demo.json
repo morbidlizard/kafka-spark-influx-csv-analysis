@@ -1,0 +1,49 @@
+{
+  "input": {
+    "input_type": "kafka",
+    "options": {
+      "server": "176.120.25.195",
+      "port": 29092,
+      "topic": "demo1",
+      "batchDuration": 2,
+      "sep": ","
+    }
+  },
+  "output": {
+    "method": "influx",
+    "options": {
+      "influx": {
+        "host":"176.120.25.195",
+        "port": 8086,
+        "username": "root",
+        "password": "root",
+        "database": "dev",
+        "measurement": "points"
+      }
+    }
+  },
+  "analysis": {
+    "historical": {
+        "method": "mock",
+      "options": {
+        "deviation": 20
+      }
+    },
+    "alert": {
+      "method": "stdout",
+      "option": {}
+    },
+    "time_delta": 20,
+    "accuracy": 3,
+    "rule": {
+      "traffic": 3
+    }
+  },
+  "processing": {
+    "transformation": "packet_size;traffic: mult(packet_size,sampling_rate)",
+    "aggregations": {
+      "operation_type": "reduce",
+      "rule": "Max(packet_size), Sum(traffic)"
+    }
+  }
+}
