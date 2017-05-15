@@ -23,7 +23,7 @@
     	"transforms": [ "transform1", "transform2", "transform3"],
     	"aggregations": {
 			"operation_type": "reduceByKey",
- 			"rule": "Min(output_port), key = src_ip, Sum(dst_ip)"
+ 			"rule": "Min(output_port); key = src_ip; Sum(dst_ip)"
 		}
 	}
  }

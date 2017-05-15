@@ -4,7 +4,7 @@
     "options": {
       "server": "localhost",
       "port": 29092,
-      "topic": "demo1",
+      "topic": "demo2",
       "batchDuration": 4,
       "sep": ","
     }
@@ -20,10 +20,10 @@
     }
   },
   "processing": {
-    "transformation": "src_ip;packet_size;traffic: mult(packet_size,sampling_rate)",
+    "transformation": "src_ip; packet_size; src_mac; traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
 			"operation_type": "reduceByKey",
-              "rule": "key = src_ip; Max(packet_size); Sum(traffic)"
+              "rule": "Max(packet_size); key = (src_ip, src_mac); Sum(traffic)"
 		}
   }
 }

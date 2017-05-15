@@ -23,7 +23,7 @@ class TestConfig():
 
 class TestAggregationProcessor(TestCase):
     def test_build_lambda_for_reduce(self):
-        test_input_rule = "Min(packet_size),Max(sampling_rate), Sum(traffic)"
+        test_input_rule = "Min(packet_size);Max(sampling_rate); Sum(traffic)"
         input_data_structure = StructType([StructField("sampling_rate", LongType()),
                                            StructField("packet_size", LongType()),
                                            StructField("traffic", LongType())])
@@ -80,9 +80,9 @@ class TestAggregationProcessor(TestCase):
         separate_key = aggregation_processor._get_separate_key_lambda()
         result = separate_key(rdd)
         self.assertListEqual(result.collect(),
-                             [('217.69.143.60', (100, 4000)), ('217.69.143.60', (100, 4000)),
-                              ('192.168.30.2', (1500, 54000)), ('192.168.30.2', (200, 3000)),
-                              ('192.168.30.2', (200, 3000))], "Lists should be equal")
+                             [(('217.69.143.60',), (100, 4000)), (('217.69.143.60',), (100, 4000)),
+                              (('192.168.30.2',), (1500, 54000)), (('192.168.30.2',), (200, 3000)),
+                              (('192.168.30.2',), (200, 3000))], "Lists should be equal")
 
     def test_seaprate_key_from_end(self):
         spark = SparkSession.builder.getOrCreate()
@@ -102,9 +102,9 @@ class TestAggregationProcessor(TestCase):
         separate_key = aggregation_processor._get_separate_key_lambda()
         result = separate_key(rdd)
         self.assertListEqual(result.collect(),
-                             [('217.69.143.60', (100, 4000)), ('217.69.143.60', (100, 4000)),
-                              ('192.168.30.2', (1500, 54000)), ('192.168.30.2', (200, 3000)),
-                              ('192.168.30.2', (200, 3000))], "Lists should be equal")
+                             [(('217.69.143.60',), (100, 4000)), (('217.69.143.60',), (100, 4000)),
+                              (('192.168.30.2',), (1500, 54000)), (('192.168.30.2',), (200, 3000)),
+                              (('192.168.30.2',), (200, 3000))], "Lists should be equal")
 
     def test_separate_key_from_center(self):
         spark = SparkSession.builder.getOrCreate()
@@ -124,9 +124,9 @@ class TestAggregationProcessor(TestCase):
         separate_key = aggregation_processor._get_separate_key_lambda()
         result = separate_key(rdd)
         self.assertListEqual(result.collect(),
-                             [('217.69.143.60', (100, 4000)), ('217.69.143.60', (100, 4000)),
-                              ('192.168.30.2', (1500, 54000)), ('192.168.30.2', (200, 3000)),
-                              ('192.168.30.2', (200, 3000))], "Lists should be equal")
+                             [(('217.69.143.60',), (100, 4000)), (('217.69.143.60',), (100, 4000)),
+                              (('192.168.30.2',), (1500, 54000)), (('192.168.30.2',), (200, 3000)),
+                              (('192.168.30.2',), (200, 3000))], "Lists should be equal")
 
     def test_build_lambda_for_reduce_by_key(self):
         spark = SparkSession.builder.getOrCreate()
@@ -145,7 +145,10 @@ class TestAggregationProcessor(TestCase):
 
         aggregation_lambda = aggregation_processor.get_aggregation_lambda()
         result = aggregation_lambda(rdd)
-        self.assertListEqual(result.collect(),
-                             [("192.168.30.2", 1900, 60000),("217.69.143.60", 200, 8000)],
+        output_list = result.collect()
+        output_list = sorted(output_list, key=lambda x: x[0][0])
+
+        self.assertListEqual(output_list,
+                             [(("192.168.30.2",), 1900, 60000), (("217.69.143.60",), 200, 8000)],
                              "Lists should be equal")
         spark.stop()
