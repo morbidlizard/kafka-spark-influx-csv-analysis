@@ -35,7 +35,7 @@ class ProducerSFLOW:
     def _follow(self):
         if self._continuously:
             while self.status == ProducerStatus.Running:
-                line = self._file.readline()
+                line = self._file.readline().rstrip()
                 if not line:
                     time.sleep(self._delay)
                     continue
