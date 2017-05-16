@@ -36,7 +36,7 @@ if __name__ == "__main__":
             topic = arg
         elif opt in ("-s", "--server"):
             server = arg
-        elif opt in ("-f", "--server"):
+        elif opt in ("-f", "--file_ip"):
             file_ip = arg
         elif opt in ("-r", "--random_data"):
             random_data = bool(arg)
