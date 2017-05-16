@@ -48,11 +48,10 @@ if __name__ == "__main__":
     if delay and topic and server:
         if random_data and file_ip:
             producer_sflow = ProducerSFLOW(delay, topic, server, random_data=True, file_ip=file_ip)
-        elif data_file:
-            producer_sflow = ProducerSFLOW(delay, topic, server, data_file=data_file)
         elif continuously and data_file:
             producer_sflow = ProducerSFLOW(delay, topic, server, data_file=data_file, continuously=True)
-
+        elif data_file:
+            producer_sflow = ProducerSFLOW(delay, topic, server, data_file=data_file)
         try:
             producer_sflow.run()
         except KeyboardInterrupt:
