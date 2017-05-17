@@ -23,10 +23,28 @@
     }
   },
   "processing": {
-    "transformation": "src_ip;packet_size; src_mac; traffic: mult(packet_size,sampling_rate)",
+    "transformation": "src_ip;packet_size;traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
 			"operation_type": "reduceByKey",
-              "rule": "key = (src_ip,src_mac) ; Max(packet_size); Sum(traffic)"
+              "rule": "key = src_ip; Max(packet_size); Sum(traffic)"
 		}
+  },
+  "analysis": {
+    "historical": {
+      "method": "mock",
+      "options":{
+        "deviation": 20
+      }
+    },
+    "alert": {
+      "method": "stdout",
+      "option": {}
+    },
+    "time_delta": 20,
+    "accuracy": 3,
+    "rule": {
+      "packet_size": 5,
+      "traffic": 10
+    }
   }
 }

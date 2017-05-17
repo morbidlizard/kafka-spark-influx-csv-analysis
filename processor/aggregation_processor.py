@@ -1,3 +1,4 @@
+import copy
 from config_parsing.aggregations_parser import SupportedReduceOperations, AggregationsParser
 
 
@@ -14,18 +15,25 @@ class AggregationProcessor:
 
         self._input_field_name = [struct_field.name for struct_field in self._input_data_structure]
 
+        aggregation_data = copy.deepcopy(self._aggregation_expression)
         if self._aggregation_expression["operation_type"] == "reduceByKey":
             key_struct_list = [token for token in self._aggregation_expression["rule"] if token["key"]]
-
             # (key_index,key_struct_field)
             for key_struct in key_struct_list:
                 self.key_data.append((self._input_field_name.index(key_struct["input_field"]), key_struct))
             for key_struct in key_struct_list:
-                self._aggregation_expression["rule"].remove(key_struct)
+                aggregation_data["rule"].remove(key_struct)
                 self._input_field_name.remove(key_struct["input_field"])
 
         self._field_to_func_name = {(field["input_field"]): (field["func_name"]) for field in
-                                    self._aggregation_expression["rule"]}
+                                    aggregation_data["rule"]}
+        self._enumerate_output_field = dict(map(lambda x: (x[1], x[0]), enumerate(self._input_field_name)))
+
+    def get_enumerate_field(self):
+        return self._enumerate_output_field
+
+    def get_output_structure(self):
+        return self._aggregation_expression
 
     # input row: (field_1,..,key,..field_n) -> (key, (field_1,..field_n))
     def _build_separate_key_lambda(self):
@@ -37,7 +45,7 @@ class AggregationProcessor:
 
     # input row: (key, (field_1,..field_n)) -> (key,field_1,..,field_n)
     def _bulid_postprocessing_lambda(self):
-        postprocessing = lambda row: tuple([row[0]]+list(row[1]))
+        postprocessing = lambda row: tuple([row[0]] + list(row[1]))
         return lambda rdd: rdd.map(postprocessing)
 
     # apply separate key lambda to rdd

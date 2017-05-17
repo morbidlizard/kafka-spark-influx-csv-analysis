@@ -10,9 +10,10 @@ class Processor:
         self.transformation_processor_fields = transformation_processor.fields
         aggregation_processor = AggregationProcessor(config, transformation_processor.fields)
 
-        # for example: max_packet_size, sum_traffic
-        self.aggregation_output_struct = ["{0}_{1}".format(aggr.lower(), field) for field, aggr in aggregation_processor._field_to_func_name.items()]
+        self.aggregation_output_struct = aggregation_processor.get_output_structure()
+
         self.aggregation = aggregation_processor.get_aggregation_lambda()
+        self.enumerate_output_aggregation_field = aggregation_processor.get_enumerate_field()
 
     # should return lambda:
     def get_pipeline_processing(self):
