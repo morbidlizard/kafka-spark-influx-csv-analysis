@@ -36,8 +36,7 @@
     "time_delta": 20,
     "accuracy": 3,
     "rule": {
-      "ip_size": 5,
-      "ip_size_sum": 10,
+      "packet_size": 5,
       "traffic": 15
     }
   }

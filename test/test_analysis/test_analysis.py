@@ -2,6 +2,7 @@ import types
 from unittest import TestCase, mock
 from unittest.mock import Mock, MagicMock
 from analysis.analysis import Analysis
+from errors import UnsupportedAnalysisFormat
 from pyspark.sql.types import StructType, StructField, LongType
 
 
@@ -14,11 +15,7 @@ class TestAnalysis(TestCase):
     @mock.patch('analysis.analysis.analysis_record')
     def test_get_analysis_lambda_for_reduce(self, mock_analysis_record):
         # set up input data structure obtained after transformation and aggregation
-        input_data_structure = StructType([StructField("packet_size", LongType()),
-                                           StructField("traffic", LongType()),
-                                           StructField("ip_size", LongType()),
-                                           StructField("ip_size_sum", LongType()),
-                                           ])
+        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
         # set up structure of config
         config = TestConfig(
             {
@@ -56,11 +53,7 @@ class TestAnalysis(TestCase):
         mock_rdd.foreachPartition.side_effect = mock_foreachPartition
 
         # set up input data structure obtained after transformation and aggregation
-        input_data_structure = StructType([StructField("packet_size", LongType()),
-                                           StructField("traffic", LongType()),
-                                           StructField("ip_size", LongType()),
-                                           StructField("ip_size_sum", LongType()),
-                                           ])
+        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
         # set up structure of config
         config = TestConfig(
             {
@@ -98,11 +91,7 @@ class TestAnalysis(TestCase):
 
     def test__parse_config(self):
         # set up input data structure obtained after transformation and aggregation
-        input_data_structure = StructType([StructField("packet_size", LongType()),
-                                           StructField("traffic", LongType()),
-                                           StructField("ip_size", LongType()),
-                                           StructField("ip_size_sum", LongType()),
-                                           ])
+        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
         # set up structure of config
         config = TestConfig(
             {
@@ -127,3 +116,29 @@ class TestAnalysis(TestCase):
                          "Error: Field _accuracy of the object class Analysis not equal time_delta from config ")
         self.assertEqual(detection._rule, config.content["rule"],
                          "Error: Field _rule of the object class Analysis not equal time_delta from config ")
+
+    def test__validation(self):
+        # set up input data structure obtained after transformation and aggregation
+        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum1": 2}
+        # set up structure of config
+        config = TestConfig(
+            {
+                "alert": {
+                    "method": "stdout",
+                    "option": {}
+                },
+                "time_delta": 20,
+                "accuracy": 3,
+                "rule": {
+                    "ip_size": 5,
+                    "ip_size_sum": 10,
+                    "traffic": 15
+                }
+
+            })
+
+        with self.assertRaises(UnsupportedAnalysisFormat) as context:
+            Analysis(config.content, Mock(), Mock(), input_data_structure)
+
+        self.assertTrue("An error in the analysis rule" in context.exception.args[0],
+                        "Catch exception, but it differs from test exception")

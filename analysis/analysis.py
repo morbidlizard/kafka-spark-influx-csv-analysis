@@ -1,4 +1,6 @@
 from time import time
+
+from errors import UnsupportedAnalysisFormat
 from pyspark.rdd import RDD
 from analysis.ianalysis import IAnalysis
 
@@ -24,11 +26,20 @@ class Analysis(IAnalysis):
 
         IAnalysis.__init__(self, config, historical_data_repository, alert_sender, data_structure)
         self._parse_config()
+        self._validation()
 
     def _parse_config(self):
         self._time_delta = self._config["time_delta"]
         self._accuracy = self._config["accuracy"]
         self._rule = self._config["rule"]
+
+    def _validation(self):
+        input_field_set = set(self._data_structure.keys())
+        rule_field_set = set(self._rule.keys())
+        intersection_set = rule_field_set - input_field_set
+        if intersection_set:
+            raise UnsupportedAnalysisFormat("An error in the analysis rule. The field {} is not contained in set of "
+                                            "fields after aggregation operation".format(intersection_set))
 
     def get_analysis_lambda(self):
         """
