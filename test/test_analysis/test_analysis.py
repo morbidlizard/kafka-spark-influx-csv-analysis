@@ -19,6 +19,12 @@ class TestAnalysis(TestCase):
         # set up structure of config
         config = TestConfig(
             {
+                "historical": {
+                    "method": "influx",
+                    "influx_options": {
+                        "measurement": "mock"
+                    }
+                },
                 "alert": {
                     "method": "stdout",
                     "option": {}
@@ -57,6 +63,12 @@ class TestAnalysis(TestCase):
         # set up structure of config
         config = TestConfig(
             {
+                "historical": {
+                    "method": "influx",
+                    "influx_options": {
+                        "measurement": "mock"
+                    }
+                },
                 "alert": {
                     "method": "stdout",
                     "option": {}
@@ -86,7 +98,7 @@ class TestAnalysis(TestCase):
                         "Failed. The mock_analysis_record didn't call in lambda that returned by get_analysis_lambda.")
         self.assertEqual(mock_analysis_record.call_args[0], ((2, 3), input_data_structure, 20, 3,
                                                              config.content["rule"], mock_alert_sender,
-                                                             mock_historical_data_repository, 1),
+                                                             mock_historical_data_repository, "mock", 1),
                          "Failed. The function analysis_record is called with invalid arguments")
 
     def test__parse_config(self):
@@ -95,6 +107,12 @@ class TestAnalysis(TestCase):
         # set up structure of config
         config = TestConfig(
             {
+                "historical": {
+                    "method": "influx",
+                    "influx_options": {
+                        "measurement": "mock"
+                    }
+                },
                 "alert": {
                     "method": "stdout",
                     "option": {}
@@ -123,6 +141,12 @@ class TestAnalysis(TestCase):
         # set up structure of config
         config = TestConfig(
             {
+                "historical": {
+                    "method": "influx",
+                    "influx_options": {
+                        "measurement": "mock"
+                    }
+                },
                 "alert": {
                     "method": "stdout",
                     "option": {}

@@ -115,8 +115,7 @@ class InfluxWriterTestCase(TestCase):
                          "In {0} measurement should be written one point".format(
                              self.__class__.influx_options["measurement"]))
 
-        fields = ["{0}_{1}".format(field["func_name"].lower(), field["input_field"]) for field in struct["rule"]
-                  if not field["key"]]
+        fields = [field["input_field"] for field in struct["rule"] if not field["key"]]
         for index, name in enumerate(fields):
             self.assertEqual(points[0][name], t[index], "Value should be {0}".format(t[index]))
 
@@ -146,4 +145,4 @@ class InfluxWriterTestCase(TestCase):
                          "In {0} measurement should be written one point".format(
                              self.__class__.influx_options["measurement"]))
 
-        self.assertEqual(points[0]["min_packet_size"], 6, "Value should be 6")
+        self.assertEqual(points[0]["packet_size"], 6, "Value should be 6")
