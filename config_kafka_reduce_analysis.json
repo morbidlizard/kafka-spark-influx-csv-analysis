@@ -23,7 +23,7 @@
     "transformation": "packet_size;traffic: mult(packet_size,sampling_rate);ip_size;ip_size_sum:ip_size",
     "aggregations": {
       "operation_type": "reduce",
-      "rule": " Max(packet_size), Sum(traffic), Min(ip_size), Sum(ip_size_sum)"
+      "rule": " Max(packet_size); Sum(traffic); Min(ip_size); Sum(ip_size_sum)"
     }
   },
   "analysis": {

@@ -19,7 +19,7 @@
     "transformation": " packet_size; traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
 			"operation_type": "reduce",
- 			"rule": "Min(packet_size), Sum(traffic)"
+ 			"rule": "Min(packet_size); Sum(traffic)"
 		}
   },
   "analysis": {

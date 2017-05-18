@@ -40,7 +40,7 @@ class TestConfig():
 
 class TestAggregationsParser(TestCase):
     def test_get_parse_expression(self):
-        test_input_rule = "key = input_port, Sum(packet_size)"
+        test_input_rule = "key = input_port; Sum(packet_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -56,7 +56,7 @@ class TestAggregationsParser(TestCase):
                            "The dictionary should be contain not empty pair 'rule':list of token")
 
         # test exception to incorrect type,function name or field name
-        test_input_rule = "key = field_name1, Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "key = field_name1; Count(field_name2); Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -93,7 +93,7 @@ class TestAggregationsParser(TestCase):
                         "Catch exception, but it differs from test exception")
 
     def test__pars_reduce(self):
-        test_input_rule = "Min(field_name1),Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "Min(field_name1);Count(field_name2); Sum(field_nameN)"
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -107,7 +107,7 @@ class TestAggregationsParser(TestCase):
         #
         # Testing an exception for special characters
         #
-        test_input_rule = "Sum(field_name1)#, Min(key), Sum(field_nameN)"
+        test_input_rule = "Sum(field_name1)#; Min(key); Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -120,7 +120,7 @@ class TestAggregationsParser(TestCase):
         #
         # Testing an exception for other symbols
         #
-        test_input_rule = "Sum(field_name1) sdfsdf, Min(key), Sum(field_nameN)"
+        test_input_rule = "Sum(field_name1) sdfsdf; Min(key); Sum(field_nameN)"
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -131,7 +131,7 @@ class TestAggregationsParser(TestCase):
                         "Catch exception, but it differs from test exception")
 
     def test__check_uniq_key_field(self):
-        test_input_rule = "Min(field_name1),Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "Min(field_name1);Count(field_name2); Sum(field_nameN)"
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -144,7 +144,22 @@ class TestAggregationsParser(TestCase):
                         "Return value should be false if the input list contain key fields with true value")
 
     def test__parse_reduce_by_key(self):
-        test_input_rule = "key = field_name1, Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "key = field_name1; Count(field_name2); Sum(field_nameN)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_expression_token = test_aggregation_config._parse_reduce_by_key()
+        self.assertIsInstance(test_expression_token, list,
+                              "Return value of the _pars_reduce_by_key method should be instance of list")
+        self.assertGreater(len(test_expression_token), 0,
+                           "Return value of the _pars_reduce method should not be empty")
+
+        #
+        # Testing complex key
+        #
+
+        test_input_rule = "key = (field_name1,field_name2); Count(field_name3); Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -158,7 +173,7 @@ class TestAggregationsParser(TestCase):
         #
         # Testing an exception for two or more key field
         #
-        test_input_rule = "key = field_name1, key = field_name2, Sum(field_nameN)"
+        test_input_rule = "key = field_name1; key = field_name2; Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -171,7 +186,7 @@ class TestAggregationsParser(TestCase):
         #
         # Testing an exception for missing the key field
         #
-        test_input_rule = "Sum(field_name1), Min(key), Sum(field_nameN)"
+        test_input_rule = "Sum(field_name1); Min(key); Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -184,7 +199,7 @@ class TestAggregationsParser(TestCase):
         #
         # Testing an exception for missing comma
         #
-        test_input_rule = "Sum(field_name1) key=key_field, Sum(field_nameN)"
+        test_input_rule = "Sum(field_name1) key=key_field; Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -195,9 +210,22 @@ class TestAggregationsParser(TestCase):
                         "Catch exception, but it differs from test exception")
 
         #
+        # Testing an exception for missing parenthesis
+        #
+        test_input_rule = "key=(key_field1,key_field2 ; Sum(field_name1); Sum(field_nameN)"
+        test_input_operation = "reduceByKey"
+        config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, data_struct)
+        with self.assertRaises(NotValidAggregationExpression) as context:
+            test_expression_token = test_aggregation_config._parse_reduce_by_key()
+        self.assertTrue("The number of opening and closing parentheses" in context.exception.args[0],
+                        "Catch exception, but it differs from test exception {}".format(context.exception.args[0]))
+
+        #
         # Testing an exception for special characters
         #
-        test_input_rule = "Sum(field_name1)#, Min(key), Sum(field_nameN)"
+        test_input_rule = "Sum(field_name1)#; Min(key); Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -210,7 +238,7 @@ class TestAggregationsParser(TestCase):
         #
         # Testing an exception for other symbols
         #
-        test_input_rule = "Sum(field_name1) sdfsdf, Min(key), Sum(field_nameN)"
+        test_input_rule = "Sum(field_name1) sdfsdf; Min(key); Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -221,7 +249,7 @@ class TestAggregationsParser(TestCase):
                         "Catch exception, but it differs from test exception")
 
     def test__parse_expression(self):
-        test_input_rule = "key = field_name1,Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "key = field_name1;Count(field_name2); Sum(field_nameN)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -230,7 +258,7 @@ class TestAggregationsParser(TestCase):
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_expression method should be instance of list")
 
-        test_input_rule = "sum(field_name1), Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "sum(field_name1); Count(field_name2); Sum(field_nameN)"
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -239,7 +267,7 @@ class TestAggregationsParser(TestCase):
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_expression method should be instance of list")
 
-        test_input_rule = "key = field_name1,Count(field_name2), Sum(field_nameN)"
+        test_input_rule = "key = field_name1;Count(field_name2); Sum(field_nameN)"
         test_input_operation = "groupBy"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -252,7 +280,7 @@ class TestAggregationsParser(TestCase):
 
     def test__types_and_fields_validation_raise_wrong_function_exception(self):
         # test wrong  function name
-        test_input_rule = "key = input_port,Sin(in_vlan), Sum(ip_size)"
+        test_input_rule = "key = input_port;Sin(in_vlan); Sum(ip_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -264,7 +292,7 @@ class TestAggregationsParser(TestCase):
 
     def test__types_and_fields_validation_raise_wrong_field_name_exception(self):
         # test wrong field name
-        test_input_rule = "key = input_port,Min(in_vlan_bad), Sum(ip_size)"
+        test_input_rule = "key = input_port;Min(in_vlan_bad); Sum(ip_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                          "rule": test_input_rule}}})
@@ -275,7 +303,7 @@ class TestAggregationsParser(TestCase):
             test_validation = test_aggregation_config._types_and_field_names_validation()
 
     def test__types_and_fields_validation_raise_already_aggregated_field_exception(self):
-        test_input_rule = "key = src_ip, Max(packet_size), Min(packet_size)"
+        test_input_rule = "key = src_ip; Max(packet_size); Min(packet_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
@@ -287,7 +315,7 @@ class TestAggregationsParser(TestCase):
 
     def test__types_and_fields_validation_raise_wrong_field_type_exception(self):
         # test wrong  type of field
-        test_input_rule = "key = input_port,Min(dst_mac), Sum(ip_size)"
+        test_input_rule = "key = input_port;Min(dst_mac); Sum(ip_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})

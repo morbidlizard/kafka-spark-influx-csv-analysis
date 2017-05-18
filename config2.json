@@ -19,7 +19,7 @@
     "transformation": "src_ip;packet_size;traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
 			"operation_type": "reduceByKey",
-              "rule": "key = src_ip, Max(packet_size), Sum(traffic)"
+              "rule": "key = src_ip; Max(packet_size); Sum(traffic)"
 		}
   }
 }

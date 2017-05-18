@@ -7,7 +7,7 @@ class AggregationProcessor:
         self._input_data_structure = input_data_structure
 
         self._support_reduce_operations = SupportedReduceOperations().operation
-        self.key_data = None
+        self.key_data = []
 
         aggregation_expression = AggregationsParser(config_processor, self._input_data_structure)
         self._aggregation_expression = aggregation_expression.get_parse_expression()
@@ -15,31 +15,34 @@ class AggregationProcessor:
         self._input_field_name = [struct_field.name for struct_field in self._input_data_structure]
 
         if self._aggregation_expression["operation_type"] == "reduceByKey":
-            key_struct = [token for token in self._aggregation_expression["rule"] if token["key"]][0]
+            key_struct_list = [token for token in self._aggregation_expression["rule"] if token["key"]]
 
             # (key_index,key_struct_field)
-            self.key_data = (self._input_field_name.index(key_struct["input_field"]), key_struct)
-
-            self._aggregation_expression["rule"].remove(key_struct)
-            self._input_field_name.remove(key_struct["input_field"])
+            for key_struct in key_struct_list:
+                self.key_data.append((self._input_field_name.index(key_struct["input_field"]), key_struct))
+            for key_struct in key_struct_list:
+                self._aggregation_expression["rule"].remove(key_struct)
+                self._input_field_name.remove(key_struct["input_field"])
 
         self._field_to_func_name = {(field["input_field"]): (field["func_name"]) for field in
                                     self._aggregation_expression["rule"]}
 
     # input row: (field_1,..,key,..field_n) -> (key, (field_1,..field_n))
-    def _bulid_separate_key_lambda(self):
-        key_index = self.key_data[0]
-        return lambda row: (row[key_index],
-                            row[:key_index] if key_index == len(row) - 1 else row[:key_index] + row[key_index + 1:])
+    def _build_separate_key_lambda(self):
+        num_field = [self._input_data_structure.names.index(field) for field in self._input_field_name]
+        lambdas_key = list(map(lambda x: lambda row: row[x[0]], self.key_data))
+        lambdas_field = list(map(lambda x: lambda row: row[x], num_field))
+        return lambda row: (tuple(map(lambda x: x(row), lambdas_key)),
+                            tuple(map(lambda x: x(row), lambdas_field)))
 
     # input row: (key, (field_1,..field_n)) -> (key,field_1,..,field_n)
     def _bulid_postprocessing_lambda(self):
-        postprocessing = lambda row: tuple([row[0]]) + row[1][:]
+        postprocessing = lambda row: tuple([row[0]]+list(row[1]))
         return lambda rdd: rdd.map(postprocessing)
 
     # apply separate key lambda to rdd
     def _get_separate_key_lambda(self):
-        separate_key_lambda = self._bulid_separate_key_lambda()
+        separate_key_lambda = self._build_separate_key_lambda()
         return lambda rdd: rdd.map(separate_key_lambda)
 
     # apply aggregation to rdd
@@ -67,4 +70,4 @@ class AggregationProcessor:
 
         aggregation = self.build_aggregation_lambda()
         return lambda rdd: rdd.reduce(aggregation) if not rdd.isEmpty() else rdd
-        #return lambda rdd: rdd.reduce(aggregation)
+        # return lambda rdd: rdd.reduce(aggregation)
