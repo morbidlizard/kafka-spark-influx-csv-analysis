@@ -44,5 +44,10 @@
       "ip_size_sum": 10,
       "traffic": 15
     }
+  },
+  "databases": {
+    "country": "./GeoLite2-Country.mmdb",
+    "city": "./GeoLite2-City.mmdb",
+    "asn": "./GeoLite2-ASN.mmdb"
   }
 }

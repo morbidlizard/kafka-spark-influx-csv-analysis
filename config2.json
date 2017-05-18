@@ -2,7 +2,7 @@
   "input": {
     "input_type": "csv",
     "options": {
-    "filename": "test.csv"
+    "filename": "sflow.csv"
     }
   },
   "output": {
@@ -16,10 +16,15 @@
     }
   },
   "processing": {
-    "transformation": "src_ip;packet_size;traffic: mult(packet_size,sampling_rate)",
+    "transformation": "src_country: country(src_ip);packet_size;traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
 			"operation_type": "reduceByKey",
-              "rule": "key = src_ip; Max(packet_size); Sum(traffic)"
+              "rule": "key = src_country, Max(packet_size), Sum(traffic)"
 		}
+  },
+  "databases": {
+    "country": "./GeoLite2-Country.mmdb",
+    "city": "./GeoLite2-City.mmdb",
+    "asn": "./GeoLite2-ASN.mmdb"
   }
 }
