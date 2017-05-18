@@ -11,11 +11,7 @@ class TestConfig():
 
 class TestAnalysisFactory(TestCase):
     def test_instance_analysis(self):
-        input_data_structure = StructType([StructField("packet_size", LongType()),
-                                           StructField("traffic", LongType()),
-                                           StructField("ip_size", LongType()),
-                                           StructField("ip_size_sum", LongType()),
-                                           ])
+        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
         config = TestConfig(
             {
                 "processing": {
