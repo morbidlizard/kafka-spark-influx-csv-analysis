@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from singleton import Singleton
 
 
@@ -18,14 +20,23 @@ class AlertMessageFactory(object):
             return StdOutAlert(self._config)
 
 
+
 class StdOutAlert(IAllertMessage, metaclass=Singleton):
     def send_message(self, **kwargs):
         string = ''
-        for row in kwargs["param"]:
+        parameters = kwargs["param"]
+        if parameters["key"]:
+            string = string + " Parameter '{}' for key={} out of range [{},{}] and equal {}".format(
+                parameters["field"],
+                parameters["key"],
+                parameters["lower_bound"],
+                parameters["upper_bound"],
+                parameters["value"])
+        else:
             string = string + " Parameter '{}' out of range [{},{}] and equal {}".format(
-                row["parameter"],
-                row["lower_bound"],
-                row["upper_bound"],
-                row["value"])
-        string = "Time: {}".format(kwargs["timestamp"]) + "." + string
+                parameters["field"],
+                parameters["lower_bound"],
+                parameters["upper_bound"],
+                parameters["value"])
+        string = "Time: {}".format(datetime.fromtimestamp(int(kwargs["timestamp"]))) + "." + string
         print(string)

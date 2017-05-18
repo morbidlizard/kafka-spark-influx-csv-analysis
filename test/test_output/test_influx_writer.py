@@ -8,6 +8,7 @@ from output.influx_writer import InfluxWriter
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config_influx.json"))
 
+
 class InfluxDBClientMock():
     def __new__(cls, host, port, username, password, database):
         mock = Mock()
@@ -27,11 +28,12 @@ class InfluxDBClientMock():
 
         influx_points = []
         for point in mock.points:
-            d, d["time"] = {**point["fields"], **point.get("tags",{})}, point["time"]
+            d, d["time"] = {**point["fields"], **point.get("tags", {})}, point["time"]
             influx_points.append(d)
 
         result_wrapper.get_points.return_value = influx_points
         return result_wrapper
+
 
 class InfluxWriterTestCase(TestCase):
     def tearDown(self):
@@ -85,55 +87,63 @@ class InfluxWriterTestCase(TestCase):
     #     spark.stop()
 
     def test_write_tuple_to_influx(self):
-            struct = ["min_packet_size", "max_traffic", "sum_traffic2"]
-            config = Config(CONFIG_PATH)
-            self.__class__.influx_options = config.content["output"]["options"]["influx"]
+        struct = {'operation_type': 'reduce',
+                  'rule': [{'key': False, 'input_field': 'packet_size', 'func_name': 'Min'},
+                           {'key': False, 'input_field': 'traffic', 'func_name': 'Max'},
+                           {'key': False, 'input_field': 'traffic2', 'func_name': 'Sum'}]}
+        config = Config(CONFIG_PATH)
+        self.__class__.influx_options = config.content["output"]["options"]["influx"]
 
-            client = InfluxDBClientMock(self.__class__.influx_options["host"], self.__class__.influx_options["port"],
-                                    self.__class__.influx_options["username"], self.__class__.influx_options["password"],
+        client = InfluxDBClientMock(self.__class__.influx_options["host"], self.__class__.influx_options["port"],
+                                    self.__class__.influx_options["username"],
+                                    self.__class__.influx_options["password"],
                                     self.__class__.influx_options["database"])
 
-            self.__class__.writer = InfluxWriter(client, self.__class__.influx_options["database"],
-                                                 self.__class__.influx_options["measurement"],
-                                                 struct)
+        self.__class__.writer = InfluxWriter(client, self.__class__.influx_options["database"],
+                                             self.__class__.influx_options["measurement"],
+                                             struct)
 
-            write_lambda = self.__class__.writer.get_write_lambda()
-            t = (2, 3, 5)
-            write_lambda(t)
+        write_lambda = self.__class__.writer.get_write_lambda()
+        t = (2, 3, 5)
+        write_lambda(t)
 
-            result = self.__class__.writer.client.query(
-                "select * from {0}".format(self.__class__.influx_options["measurement"]))
-            points = list(result.get_points())
+        result = self.__class__.writer.client.query(
+            "select * from {0}".format(self.__class__.influx_options["measurement"]))
+        points = list(result.get_points())
 
-            self.assertEqual(len(points), 1,
-                             "In {0} measurement should be written one point".format(
-                                 self.__class__.influx_options["measurement"]))
+        self.assertEqual(len(points), 1,
+                         "In {0} measurement should be written one point".format(
+                             self.__class__.influx_options["measurement"]))
 
-            for index, name in enumerate(struct):
-                self.assertEqual(points[0][name], t[index], "Value should be {0}".format(t[index]))
+        fields = ["{0}_{1}".format(field["func_name"].lower(), field["input_field"]) for field in struct["rule"]
+                  if not field["key"]]
+        for index, name in enumerate(fields):
+            self.assertEqual(points[0][name], t[index], "Value should be {0}".format(t[index]))
 
     def test_write_number_to_influx(self):
-            struct = ["min_packet_size"]
-            config = Config(CONFIG_PATH)
-            self.__class__.influx_options = config.content["output"]["options"]["influx"]
+        struct = {'operation_type': 'reduce',
+                  'rule': [{'key': False, 'input_field': 'packet_size', 'func_name': 'Min'}]}
+        config = Config(CONFIG_PATH)
+        self.__class__.influx_options = config.content["output"]["options"]["influx"]
 
-            client = InfluxDBClientMock(self.__class__.influx_options["host"], self.__class__.influx_options["port"],
-                                    self.__class__.influx_options["username"], self.__class__.influx_options["password"],
+        client = InfluxDBClientMock(self.__class__.influx_options["host"], self.__class__.influx_options["port"],
+                                    self.__class__.influx_options["username"],
+                                    self.__class__.influx_options["password"],
                                     self.__class__.influx_options["database"])
 
-            self.__class__.writer = InfluxWriter(client, self.__class__.influx_options["database"],
-                                                 self.__class__.influx_options["measurement"],
-                                                 struct)
+        self.__class__.writer = InfluxWriter(client, self.__class__.influx_options["database"],
+                                             self.__class__.influx_options["measurement"],
+                                             struct)
 
-            write_lambda = self.__class__.writer.get_write_lambda()
-            write_lambda(6)
+        write_lambda = self.__class__.writer.get_write_lambda()
+        write_lambda(6)
 
-            result = self.__class__.writer.client.query(
-                "select * from {0}".format(self.__class__.influx_options["measurement"]))
-            points = list(result.get_points())
+        result = self.__class__.writer.client.query(
+            "select * from {0}".format(self.__class__.influx_options["measurement"]))
+        points = list(result.get_points())
 
-            self.assertEqual(len(points), 1,
-                             "In {0} measurement should be written one point".format(
-                                 self.__class__.influx_options["measurement"]))
+        self.assertEqual(len(points), 1,
+                         "In {0} measurement should be written one point".format(
+                             self.__class__.influx_options["measurement"]))
 
-            self.assertEqual(points[0]["min_packet_size"], 6, "Value should be 6")
+        self.assertEqual(points[0]["min_packet_size"], 6, "Value should be 6")

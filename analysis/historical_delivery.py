@@ -24,7 +24,7 @@ class MockInfluxRead(HistoricalDataDelivery, metaclass=Singleton):
     def __init__(self, config):
         self._deviation = config["options"]["deviation"]
 
-    def read(self, timestamp1, timestamp2, data):
+    def read(self, timestamp1, timestamp2, data, key=None):
         rnd = random.randint(0, 15)
         if rnd > 10:
             n = 2
@@ -36,6 +36,8 @@ class MockInfluxRead(HistoricalDataDelivery, metaclass=Singleton):
         if isinstance(data, tuple):
             for i in range(n):
                 tmp = [timestamp1 + random.randint(0, int((timestamp2 - timestamp1) * 100)) / 100]
+                if key:
+                    tmp.append(key)
                 for j in range(len(data)):
                     value = data[j]
                     delta = int(data[j] * self._deviation / 100.)

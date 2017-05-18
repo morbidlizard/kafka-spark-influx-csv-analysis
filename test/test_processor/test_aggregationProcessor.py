@@ -43,25 +43,6 @@ class TestAggregationProcessor(TestCase):
         test_result = test_aggregation_lambda(test_rdd)
         self.assertTupleEqual(test_result, (7, 0, 5), "Error in aggregation operation. Tuple should be equal")
 
-    def test_remove_key_struct_from_aggregation_expression_rule(self):
-        config = Config(CONFIG_PATH)
-        aggregation_processor = AggregationProcessor(config, data_struct)
-
-        self.assertListEqual(aggregation_processor._aggregation_expression["rule"],
-                             [
-                                 {
-                                     "key": False,
-                                     "func_name": "Sum",
-                                     "input_field": "traffic"
-                                 },
-                                 {
-                                     "key": False,
-                                     "func_name": "Sum",
-                                     "input_field": "packet_size"
-                                 },
-                             ],
-                             "Lists should be equal")
-
     def test_separate_key_from_start(self):
         spark = SparkSession.builder.getOrCreate()
         sc = spark.sparkContext
