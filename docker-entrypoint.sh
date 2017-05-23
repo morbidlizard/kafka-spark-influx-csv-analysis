@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-/usr/bin/python3.5 main.py $1
+spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.1.0 main.py $1
