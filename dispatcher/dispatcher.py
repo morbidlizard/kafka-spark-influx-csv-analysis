@@ -13,7 +13,7 @@ class Dispatcher:
         if ("analysis" in config.content.keys()):
             self._isAnalysis = True
             self.analysis = AnalysisFactory(config,
-                                            self.processor.enumerate_output_aggregation_field).instance_analysis()
+                                            self.processor.aggregation_output_struct).instance_analysis()
 
     def run_pipeline(self):
         processor_part = self.processor.get_pipeline_processing()

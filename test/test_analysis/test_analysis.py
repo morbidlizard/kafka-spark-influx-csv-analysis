@@ -15,7 +15,10 @@ class TestAnalysis(TestCase):
     @mock.patch('analysis.analysis.analysis_record')
     def test_get_analysis_lambda_for_reduce(self, mock_analysis_record):
         # set up input data structure obtained after transformation and aggregation
-        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
+        input_data_structure = {'rule': [{'key': False, 'func_name': 'Max', 'input_field': 'traffic'},
+                                         {'key': False, 'func_name': 'Max', 'input_field': 'ip_size'},
+                                         {'key': False, 'func_name': 'Sum', 'input_field': 'ip_size_sum'}],
+                                'operation_type': 'reduceByKey'}
         # set up structure of config
         config = TestConfig(
             {
@@ -59,7 +62,11 @@ class TestAnalysis(TestCase):
         mock_rdd.foreachPartition.side_effect = mock_foreachPartition
 
         # set up input data structure obtained after transformation and aggregation
-        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
+        input_data_structure = {'rule': [{'key': True, 'func_name': '', 'input_field': 'src_mac'},
+                                         {'key': False, 'func_name': 'Max', 'input_field': 'traffic'},
+                                         {'key': False, 'func_name': 'Max', 'input_field': 'ip_size'},
+                                         {'key': False, 'func_name': 'Sum', 'input_field': 'ip_size_sum'}],
+                                'operation_type': 'reduceByKey'}
         # set up structure of config
         config = TestConfig(
             {
@@ -96,14 +103,19 @@ class TestAnalysis(TestCase):
                         "Failed. The foreachPartition didn't call in lambda that returned by get_analysis_lambda.")
         self.assertTrue(mock_analysis_record.called,
                         "Failed. The mock_analysis_record didn't call in lambda that returned by get_analysis_lambda.")
-        self.assertEqual(mock_analysis_record.call_args[0], ((2, 3), input_data_structure, 20, 3,
+        self.assertEqual(mock_analysis_record.call_args[0], ((2, 3), {'ip_size': 1, 'traffic': 0, 'ip_size_sum': 2}, 20, 3,
                                                              config.content["rule"], mock_alert_sender,
-                                                             mock_historical_data_repository, "mock", 1),
+                                                             mock_historical_data_repository, "mock", ['src_mac'], 1),
                          "Failed. The function analysis_record is called with invalid arguments")
 
     def test__parse_config(self):
         # set up input data structure obtained after transformation and aggregation
-        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
+        input_data_structure = {'rule': [{'key': True, 'func_name': '', 'input_field': 'src_ip'},
+                                         {'key': True, 'func_name': '', 'input_field': 'src_mac'},
+                                         {'key': False, 'func_name': 'Max', 'input_field': 'ip_size'},
+                                         {'key': False, 'func_name': 'Max', 'input_field': 'ip_size_sum'},
+                                         {'key': False, 'func_name': 'Sum', 'input_field': 'traffic'}],
+                                'operation_type': 'reduceByKey'}
         # set up structure of config
         config = TestConfig(
             {
@@ -137,7 +149,11 @@ class TestAnalysis(TestCase):
 
     def test__validation(self):
         # set up input data structure obtained after transformation and aggregation
-        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum1": 2}
+        input_data_structure = {'rule': [{'key': True, 'func_name': '', 'input_field': 'src_ip'},
+                                         {'key': True, 'func_name': '', 'input_field': 'src_mac'},
+                                         {'key': False, 'func_name': 'Max', 'input_field': 'ip_size_sum'},
+                                         {'key': False, 'func_name': 'Sum', 'input_field': 'traffic'}],
+                                'operation_type': 'reduceByKey'}
         # set up structure of config
         config = TestConfig(
             {

@@ -34,7 +34,7 @@ class Analysis(IAnalysis):
         self._rule = self._config["rule"]
 
     def _validation(self):
-        input_field_set = set(self._data_structure.keys())
+        input_field_set = set(self._input_fields.keys())
         rule_field_set = set(self._rule.keys())
         intersection_set = rule_field_set - input_field_set
         if intersection_set:
@@ -47,7 +47,8 @@ class Analysis(IAnalysis):
         :return: lambda function under tuple or rdd object 
         """
 
-        data_structure = self._data_structure
+        data_structure = self._input_fields
+        key_fields_name = list(self._key_fields_name)
         time_delta = self._time_delta
         accuracy = self._accuracy
         rule = self._rule
@@ -62,7 +63,7 @@ class Analysis(IAnalysis):
                     lambda iterator: map(
                         lambda record: analysis_record(record[1:], data_structure, time_delta, accuracy, rule,
                                                        alert_sender_singleton, historical_data_repository_singleton,
-                                                       measurement, record[0]), iterator))
+                                                       measurement, key_fields_name, record[0]), iterator))
             else:
                 analysis_record(rdd_or_object, data_structure, time_delta, accuracy, rule,
                                 alert_sender_singleton, historical_data_repository_singleton, measurement)
@@ -71,7 +72,7 @@ class Analysis(IAnalysis):
 
 
 def analysis_record(input_tuple_value, data_structure, time_delta, accuracy, rule, alert_sender_singleton,
-                    historical_data_repository_singleton, measurement, key=None):
+                    historical_data_repository_singleton, measurement, key_fields_name=None, key=None):
     """
     Checks data for deviations
     :param key: This is the key to the data aggregation
@@ -91,8 +92,7 @@ def analysis_record(input_tuple_value, data_structure, time_delta, accuracy, rul
     # call for real historical data
     influx_key = None
     if key:
-        key_parts = list(map(lambda part: str(part), key))
-        influx_key = "\"key\"='{}'".format(":".join(key_parts))
+        influx_key = dict(map(lambda x, y: (x, y), key_fields_name, key))
 
 
     historical_values = historical_data_repository_singleton.read(measurement, begin_time_interval.nanoseconds(),

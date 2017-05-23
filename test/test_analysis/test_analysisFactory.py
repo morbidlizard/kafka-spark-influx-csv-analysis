@@ -11,7 +11,10 @@ class TestConfig():
 
 class TestAnalysisFactory(TestCase):
     def test_instance_analysis(self):
-        input_data_structure = {"traffic": 0, "ip_size": 1, "ip_size_sum": 2}
+        input_data_structure = {'rule': [{'key': False, 'func_name': 'Max', 'input_field': 'traffic'},
+                                         {'key': False, 'func_name': 'Max', 'input_field': 'ip_size'},
+                                         {'key': False, 'func_name': 'Sum', 'input_field': 'ip_size_sum'}],
+                                'operation_type': 'reduce'}
         config = TestConfig(
             {
                 "processing": {
