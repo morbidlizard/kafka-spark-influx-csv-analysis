@@ -32,7 +32,7 @@ class InfluxDBClientMock():
                              mock.points))
 
 
-        country_result = re.search(r"country=\'(\w+)\'", query)
+        country_result = re.search(r"\"country\"=\'(\w+)\'", query)
         if country_result:
             country = country_result.groups()[0]
             points = list(filter(lambda point: point["tags"]["country"] == country, points))
@@ -72,8 +72,8 @@ class HistoryDataDriverTestCase(unittest.TestCase):
     def test_read_with_tag(self):
         history_data_driver = HistoryDataDriver(__class__.client)
 
-        result = history_data_driver.read("points", 1495005255000000000, 1495005258000000000, "country='Russia'")
+        result = history_data_driver.read("points", 1495005255000000000, 1495005258000000000, {'country': 'Russia'})
         self.assertListEqual(result, [{'time': '2017-05-17T07:14:17Z', 'sum_traffic': 12345, 'country': 'Russia'}])
 
-        result = history_data_driver.read("points", 1495005255000000000, 1495005258000000000, "country='USA'")
+        result = history_data_driver.read("points", 1495005255000000000, 1495005258000000000, {'country': 'USA'})
         self.assertListEqual(result, [{'time': '2017-05-17T07:14:16Z', 'sum_traffic': 12345, 'country': 'USA'}])

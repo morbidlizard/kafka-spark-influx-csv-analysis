@@ -2,10 +2,10 @@
   "input": {
     "input_type": "kafka",
     "options": {
-      "server": "localhost",
+      "server": "176.120.25.195",
       "port": 29092,
-      "topic": "demo1",
-      "batchDuration": 2,
+      "topic": "testtag01",
+      "batchDuration": 10,
       "sep": ","
     }
   },
@@ -13,23 +13,23 @@
     "method": "influx",
     "options": {
       "influx": {
-        "host":"localhost",
+        "host": "localhost",
         "port": 8086,
         "username": "root",
         "password": "root",
-        "database": "dev",
+        "database": "test3",
         "measurement": "points"
       }
     }
   },
   "processing": {
-    "transformation": "src_ip; packet_size; src_mac; traffic: mult(packet_size,sampling_rate)",
+    "transformation": "src_country: country(src_ip); src_port_or_icmp_type; packet_size; traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
-			"operation_type": "reduceByKey",
-              "rule": "Max(packet_size); key = (src_ip, src_mac); Sum(traffic)"
-		}
+      "operation_type": "reduceByKey",
+      "rule": "Max(packet_size); key = (src_country, src_port_or_icmp_type); Sum(traffic)"
+    }
   },
- "analysis": {
+  "analysis": {
     "historical": {
       "method": "influx",
       "influx_options": {
@@ -37,7 +37,7 @@
         "port": 8086,
         "username": "root",
         "password": "root",
-        "database": "dev",
+        "database": "test3",
         "measurement": "points"
       }
     },
@@ -48,12 +48,13 @@
     "time_delta": 20,
     "accuracy": 10,
     "rule": {
-      "traffic": 2
+      "packet_size": 5,
+      "traffic": 8
     }
  },
   "databases": {
-    "country": "./GeoLite2-Country.mmdb",
-    "city": "./GeoLite2-City.mmdb",
-    "asn": "./GeoLite2-ASN.mmdb"
+    "country": "./GeoLite2/GeoLite2-Country.mmdb",
+    "city": "./GeoLite2/GeoLite2-City.mmdb",
+    "asn": "./GeoLite2/GeoLite2-ASN.mmdb"
   }
 }
