@@ -4,18 +4,21 @@
     "options": {
       "server": "localhost",
       "port": 29092,
-      "topic": "demo2",
-      "batchDuration": 4,
+      "topic": "demo1",
+      "batchDuration": 2,
       "sep": ","
     }
   },
   "output": {
-    "method": "stdout",
+    "method": "influx",
     "options": {
-      "csv": {
-        "path": "4.csv",
-        "encoding": "utf-8",
-        "sep": ";"
+      "influx": {
+        "host":"localhost",
+        "port": 8086,
+        "username": "root",
+        "password": "root",
+        "database": "dev",
+        "measurement": "points"
       }
     }
   },
@@ -26,11 +29,16 @@
               "rule": "Max(packet_size); key = (src_ip, src_mac); Sum(traffic)"
 		}
   },
-  "analysis": {
+ "analysis": {
     "historical": {
-      "method": "mock",
-      "options":{
-        "deviation": 20
+      "method": "influx",
+      "influx_options": {
+        "host":"localhost",
+        "port": 8086,
+        "username": "root",
+        "password": "root",
+        "database": "dev",
+        "measurement": "points"
       }
     },
     "alert": {
@@ -38,10 +46,14 @@
       "option": {}
     },
     "time_delta": 20,
-    "accuracy": 3,
+    "accuracy": 10,
     "rule": {
-      "packet_size": 5,
-      "traffic": 8
+      "traffic": 2
     }
+ },
+  "databases": {
+    "country": "./GeoLite2-Country.mmdb",
+    "city": "./GeoLite2-City.mmdb",
+    "asn": "./GeoLite2-ASN.mmdb"
   }
 }

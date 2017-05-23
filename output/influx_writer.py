@@ -7,9 +7,7 @@ from .output_writer import OutputWriter
 
 class InfluxWriter(OutputWriter):
     def __init__(self, client, database, measurement, input_fields):
-        # name of output field. for example: max_packet_size, sum_traffic
-        fields = ["{0}_{1}".format(field["func_name"].lower(), field["input_field"]) for field in input_fields["rule"]
-                  if not field["key"]]
+        fields = [field["input_field"] for field in input_fields["rule"] if not field["key"]]
         self.client, self.measurement, self.fields = client, measurement, fields
         self.client.create_database(database)
 
@@ -20,8 +18,11 @@ class InfluxWriter(OutputWriter):
             points = []
             for t in iterator:
                 fields = {fields_mapping[index]: value for index, value in enumerate(t[1:])}
+
+                key_parts = list(map(lambda e: str(e), t[0]))
+
                 points.append({"measurement": measurement, "fields": fields,
-                               "time": nanotime.now().nanoseconds(), "tags": {"key": t[0]}})
+                               "time": nanotime.now().nanoseconds(), "tags": {"key": ":".join(key_parts)}})
             return points
 
         def make_points_from_tuple_or_number(object):

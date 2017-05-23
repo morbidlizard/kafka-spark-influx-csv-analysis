@@ -1,5 +1,5 @@
 from time import time
-
+import nanotime
 from errors import UnsupportedAnalysisFormat
 from pyspark.rdd import RDD
 from analysis.ianalysis import IAnalysis
@@ -54,48 +54,57 @@ class Analysis(IAnalysis):
         alert_sender_singleton = self._alert_sender
         historical_data_repository_singleton = self._historical_data_repository
 
+        measurement = self._config["historical"]["influx_options"]["measurement"]
+
         def run_necessary_lambda(rdd_or_object):
             if isinstance(rdd_or_object, RDD):
                 rdd_or_object.foreachPartition(
                     lambda iterator: map(
                         lambda record: analysis_record(record[1:], data_structure, time_delta, accuracy, rule,
                                                        alert_sender_singleton, historical_data_repository_singleton,
-                                                       record[0]), iterator))
+                                                       measurement, record[0]), iterator))
             else:
                 analysis_record(rdd_or_object, data_structure, time_delta, accuracy, rule,
-                                alert_sender_singleton, historical_data_repository_singleton)
+                                alert_sender_singleton, historical_data_repository_singleton, measurement)
 
         return lambda rdd_or_object: run_necessary_lambda(rdd_or_object)
 
 
 def analysis_record(input_tuple_value, data_structure, time_delta, accuracy, rule, alert_sender_singleton,
-                    historical_data_repository_singleton, key=None):
+                    historical_data_repository_singleton, measurement, key=None):
     """
     Checks data for deviations
     :param key: This is the key to the data aggregation
     :param input_tuple_value: input data to check
     :return:
     """
-    current_timestamp = time()
-    begin_time_interval = current_timestamp - time_delta - accuracy
-    end_time_interval = current_timestamp - time_delta + accuracy
+    nano_timestamp, nano_delta, nano_accuracy = nanotime.timestamp(time()), nanotime.seconds(
+        time_delta), nanotime.seconds(accuracy)
+
+    begin_time_interval = nano_timestamp - nano_delta - nano_accuracy
+    end_time_interval = nano_timestamp - nano_delta + nano_accuracy
 
     # create a dictionary with a key equal to the name of field from rule and a value equal to index in the
     # input tuple nfti (name field to index)
-    nfti = dict(map(lambda x: (x, data_structure[x]), rule.keys()))
+    name_to_index = dict(map(lambda x: (x, data_structure[x]), rule.keys()))
+
     # call for real historical data
-    historical_values = historical_data_repository_singleton.read(begin_time_interval, end_time_interval,
-                                                                  input_tuple_value, key)
+    influx_key = None
+    if key:
+        key_parts = list(map(lambda part: str(part), key))
+        influx_key = "\"key\"='{}'".format(":".join(key_parts))
+
+
+    historical_values = historical_data_repository_singleton.read(measurement, begin_time_interval.nanoseconds(),
+                                                                  end_time_interval.nanoseconds(), influx_key)
+
     if historical_values:
-        historical_values = sorted(historical_values, key=lambda x: x[0])
-        if key:
-            historical_values = historical_values[0][2:]
-        else:
-            historical_values = historical_values[0][1:]
+        historical_values = sorted(historical_values, key=lambda point: point["time"])
+        # we analyse only first value from data, because next values will analysed in next moments
         for field in rule.keys():
-            lower_bound = historical_values[nfti[field]] * (1 - float(rule[field]) / 100)
-            upper_bound = historical_values[nfti[field]] * (1 + float(rule[field]) / 100)
-            current_value = input_tuple_value[nfti[field]]
+            lower_bound = historical_values[0][field] * (1 - float(rule[field]) / 100)
+            upper_bound = historical_values[0][field] * (1 + float(rule[field]) / 100)
+            current_value = input_tuple_value[name_to_index[field]]
             if (current_value < lower_bound) or (current_value > upper_bound):
                 alert_sender_singleton.send_message(timestamp=time(),
                                                     param={"key": key,

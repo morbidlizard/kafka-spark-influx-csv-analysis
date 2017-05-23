@@ -4,18 +4,21 @@
     "options": {
       "server": "localhost",
       "port": 29092,
-      "topic": "demo2",
-      "batchDuration": 4,
+      "topic": "demo1",
+      "batchDuration": 2,
       "sep": ","
     }
   },
   "output": {
-    "method": "stdout",
+    "method": "influx",
     "options": {
-      "csv": {
-        "path": "3.csv",
-        "encoding": "utf-8",
-        "sep": ";"
+      "influx": {
+        "host":"localhost",
+        "port": 8086,
+        "username": "root",
+        "password": "root",
+        "database": "dev",
+        "measurement": "points"
       }
     }
   },
@@ -28,9 +31,14 @@
   },
   "analysis": {
     "historical": {
-      "method": "mock",
-      "options":{
-        "deviation": 20
+      "method": "influx",
+      "influx_options": {
+        "host":"localhost",
+        "port": 8086,
+        "username": "root",
+        "password": "root",
+        "database": "dev",
+        "measurement": "points"
       }
     },
     "alert": {
@@ -40,9 +48,7 @@
     "time_delta": 20,
     "accuracy": 3,
     "rule": {
-      "ip_size": 5,
-      "ip_size_sum": 10,
-      "traffic": 15
+      "traffic": 2
     }
   },
   "databases": {
