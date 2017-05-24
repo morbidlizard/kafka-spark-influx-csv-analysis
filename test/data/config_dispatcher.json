@@ -41,8 +41,8 @@
     }
   },
   "databases": {
-    "country": "./Mock-GeoLite2-Country.mmdb",
-    "city": "./Mock-GeoLite2-City.mmdb",
-    "asn": "./Mock-GeoLite2-ASN.mmdb"
+    "country": "./GeoLite2/GeoLite2-Country.mmdb",
+    "city": "./GeoLite2/GeoLite2-City.mmdb",
+    "asn": "./GeoLite2/GeoLite2-ASN.mmdb"
   }
 }

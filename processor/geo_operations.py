@@ -1,11 +1,16 @@
 import geoip2.database
+import os
+
 
 class GeoIPReaderSingleton(object):
     __instance = None
+
     def __new__(cls, path):
         if cls.__instance is None:
-            cls.__instance =  geoip2.database.Reader(path)
+            cls.__instance = geoip2.database.Reader(os.path.basename(path))
+
         return cls.__instance
+
 
 def country(ip_addr, country_path):
     import geoip2.database
@@ -16,6 +21,7 @@ def country(ip_addr, country_path):
         return match.country.name
     except geoip2.errors.AddressNotFoundError:
         return "unknown_country"
+
 
 def city(ip_addr, city_path):
     import geoip2.database

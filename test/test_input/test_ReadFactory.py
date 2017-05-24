@@ -1,5 +1,7 @@
 import os
 import unittest
+from unittest import mock
+from unittest.mock import MagicMock
 
 from errors import InputError
 from input.executors import BatchExecutor
@@ -10,7 +12,16 @@ INCORRECT_CONFIG1_PATH = os.path.join(os.path.dirname(__file__), os.path.join(".
 INCORRECT_CONFIG2_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "bad2_input_config.json"))
 
 class ReadFactoryTestCase(unittest.TestCase):
-    def test_getExutor(self):
+    @mock.patch('pyspark.sql.session.SparkSession', autospec=True)
+    def test_getExutor(self, mock_sparksession):
+        mock_context = MagicMock()
+        mock_context.addFile.return_value = "test"
+        mock_spark = MagicMock()
+        mock_spark.sparkContext.return_value = mock_context
+        mock_builder = MagicMock()
+        mock_builder.getOrCreate.return_value = mock_spark
+        mock_sparksession.builder
+        mock_sparksession.builder.return_value = mock_builder
         config = InputConfig(CONFIG_PATH)
         factory = ReadFactory(config)
         test_executor = factory.get_executor()
