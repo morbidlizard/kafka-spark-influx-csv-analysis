@@ -5,4 +5,6 @@ build_image:
   script:
     - docker build -t pyspark_testing_env docker/
     - docker run --rm -v $(pwd):/project pyspark_testing_env bash -c 'cd project && python -m pip install -r requirements.txt && nosetests'
+
+after_script:
     - docker run --rm -v $(pwd):/project pyspark_testing_env bash -c 'cd project && py3clean .'
