@@ -4,8 +4,8 @@
     "options": {
       "server": "176.120.25.195",
       "port": 29092,
-      "topic": "demo1",
-      "batchDuration": 2,
+      "topic": "testtag01",
+      "batchDuration": 5,
       "sep": ","
     }
   },
@@ -13,7 +13,7 @@
     "method": "influx",
     "options": {
       "influx": {
-        "host":"176.120.25.195",
+        "host": "localhost",
         "port": 8086,
         "username": "root",
         "password": "root",
@@ -22,11 +22,23 @@
       }
     }
   },
+  "processing": {
+    "transformation": "src_ip; dst_country: country(dst_ip); src_port_or_icmp_type; traffic: mult(packet_size,sampling_rate)",
+    "aggregations": {
+      "operation_type": "reduceByKey",
+      "rule": "key = (src_ip, dst_country, src_port_or_icmp_type); Sum(traffic)"
+    }
+  },
   "analysis": {
     "historical": {
-        "method": "mock",
-      "options": {
-        "deviation": 20
+      "method": "influx",
+      "influx_options": {
+        "host":"localhost",
+        "port": 8086,
+        "username": "root",
+        "password": "root",
+        "database": "dev",
+        "measurement": "points"
       }
     },
     "alert": {
@@ -34,18 +46,11 @@
       "option": {}
     },
     "time_delta": 20,
-    "accuracy": 3,
+    "accuracy": 10,
     "rule": {
-      "traffic": 3
+      "traffic": 8
     }
-  },
-  "processing": {
-    "transformation": "packet_size;traffic: mult(packet_size,sampling_rate)",
-    "aggregations": {
-      "operation_type": "reduce",
-      "rule": "Max(packet_size); Sum(traffic)"
-    }
-  },
+ },
   "databases": {
     "country": "./GeoLite2-Country.mmdb",
     "city": "./GeoLite2-City.mmdb",

@@ -2,10 +2,10 @@
   "input": {
     "input_type": "kafka",
     "options": {
-      "server": "localhost",
+      "server": "176.120.25.195",
       "port": 29092,
-      "topic": "demo1",
-      "batchDuration": 2,
+      "topic": "testtag01",
+      "batchDuration": 5,
       "sep": ","
     }
   },
@@ -23,10 +23,10 @@
     }
   },
   "processing": {
-    "transformation": "packet_size;traffic: mult(packet_size,sampling_rate);ip_size;ip_size_sum:ip_size",
+    "transformation": "packet_size;traffic: mult(packet_size,sampling_rate)",
     "aggregations": {
       "operation_type": "reduce",
-      "rule": " Max(packet_size); Sum(traffic); Min(ip_size); Sum(ip_size_sum)"
+      "rule": " Max(packet_size); Sum(traffic)"
     }
   },
   "analysis": {
@@ -48,7 +48,7 @@
     "time_delta": 20,
     "accuracy": 3,
     "rule": {
-      "traffic": 2
+      "traffic": 10
     }
   },
   "databases": {
