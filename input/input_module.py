@@ -85,9 +85,9 @@ class ReadFactory():
         """
         if ("input" in self._config.content.keys()):
             if (self._config.content["input"]["input_type"] == "csv"):
-                return ReadCSVFile(self._config.content["input"]["options"]["filename"]).get_batch_executor()
+                return ReadCSVFile(self._config.content).get_batch_executor()
             elif (self._config.content["input"]["input_type"] == "kafka"):
-                return KafkaStreaming(self._config.content["input"]["options"]).get_streaming_executor()
+                return KafkaStreaming(self._config.content).get_streaming_executor()
             raise InputError("Error: {} unsuported input format. ReadFactory cannot create Executable".format(
                 self._config.content["input"]))
         raise InputError("Error: Some option was miss in config file. ReadFactory cannot create Executable")
@@ -95,13 +95,16 @@ class ReadFactory():
 
 class KafkaStreaming(object):
     def __init__(self, config):
-        self._server = config["server"]
-        self._port = config["port"]
-        self._topic = config["topic"]
-        self._batchDuration = config["batchDuration"]
-        self._sep = config["sep"]
+        self._server = config["input"]["options"]["server"]
+        self._port = config["input"]["options"]["port"]
+        self._topic = config["input"]["options"]["topic"]
+        self._batchDuration = config["input"]["options"]["batchDuration"]
+        self._sep = config["input"]["options"]["sep"]
         self._spark = SparkSession.builder.appName("StreamingDataKafka").getOrCreate()
         sc = self._spark.sparkContext
+        sc.addFile(config["databases"]["country"])
+        sc.addFile(config["databases"]["city"])
+        sc.addFile(config["databases"]["asn"])
 
         kafka_server = self._server + ":" + str(self._port)
         self._ssc = StreamingContext(sc, self._batchDuration)
@@ -130,7 +133,7 @@ class ReadCSVFile(object):
         readCsvFile is a class for reading data from csv file.
     """
 
-    def __init__(self, path_to_file):
+    def __init__(self, config):
         """
         Create ReadCsvFile and read data from csv file.
 
@@ -138,7 +141,12 @@ class ReadCSVFile(object):
         """
 
         spark = SparkSession.builder.getOrCreate()
-        self.rdd = spark.read.csv(path_to_file, data_struct).rdd
+        sc = spark.sparkContext
+        sc.addFile(config["databases"]["country"])
+        sc.addFile(config["databases"]["city"])
+        sc.addFile(config["databases"]["asn"])
+
+        self.rdd = spark.read.csv(config["input"]["options"]["filename"], data_struct).rdd
 
     def get_batch_executor(self):
         """

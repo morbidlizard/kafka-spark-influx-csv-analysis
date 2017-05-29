@@ -21,5 +21,10 @@
 			"operation_type": "reduce",
  			"rule": "Min(traffic); Sum(traffic)"
 		}
+  },
+  "databases": {
+    "country": "./GeoLite2/GeoLite2-Country.mmdb",
+    "city": "./GeoLite2/GeoLite2-City.mmdb",
+    "asn": "./GeoLite2/GeoLite2-ASN.mmdb"
   }
 }
