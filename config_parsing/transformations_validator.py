@@ -5,47 +5,9 @@ import pyspark.sql.types as types
 import errors
 from .transformations_parser import FieldTransformation
 
-OPERATIONS = {
-    "sum": {
-        "operands": 2,
-        "type": types.LongType(),
-        "result": types.LongType()
-    },
-    "minus": {
-        "operands": 2,
-        "type": types.LongType(),
-        "result": types.LongType()
-    },
-    "mult": {
-        "operands": 2,
-        "type": types.LongType(),
-        "result": types.LongType()
-    },
-    "div": {
-        "operands": 2,
-        "type": types.LongType(),
-        "result": types.LongType()
-    },
-    "country": {
-        "operands": 1,
-        "type": types.StringType(),
-        "result": types.StringType()
-    },
-    "city": {
-        "operands": 1,
-        "type": types.StringType(),
-        "result": types.StringType()
-    },
-    "aarea": {
-        "operands": 1,
-        "type": types.StringType(),
-        "result": types.StringType()
-    }
-}
-
 
 class TransformatoinsValidator:
-    def __init__(self):
+    def __init__(self, transformation_operations):
         timestamp = types.StructField('timestamp', types.LongType())  # 1
         flow_indicator = types.StructField('FLOW_indicator', types.StringType())  # 2
         agent_address = types.StructField('agent_address', types.StringType())  # 3
@@ -74,6 +36,9 @@ class TransformatoinsValidator:
                                                 dst_port_or_icmp_code,
                                                 tcp_flags, packet_size, ip_size, sampling_rate])
 
+        self.transformation_operations = transformation_operations
+
+
     def __get_field(self, field):
         try:
             renamed_field = self.current_fields[field]
@@ -82,7 +47,7 @@ class TransformatoinsValidator:
             raise errors.FieldNotExists("Field with name {} not exists".format(field))
 
     def _validate_syntax_tree(self, tree):
-        operation = OPERATIONS.get(tree.operation, None)
+        operation = self.transformation_operations.operations_dict.get(tree.operation, None)
         if operation is not None:
             if len(tree.children) == operation["operands"]:
                 for ch in tree.children:
@@ -96,7 +61,7 @@ class TransformatoinsValidator:
                             renamed_field = self.__get_field(ch)
                             actual_type = renamed_field.dataType
                     else:  # it's other syntax tree, we should extract operation, get type and verify
-                        subtree_operation = OPERATIONS.get(ch.operation, None)
+                        subtree_operation = self.transformation_operations.operations_dict.get(ch.operation, None)
                         if subtree_operation:
                             actual_type = subtree_operation["result"]
                         else:

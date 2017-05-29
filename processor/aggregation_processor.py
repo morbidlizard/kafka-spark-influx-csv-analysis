@@ -1,5 +1,6 @@
 import copy
-from config_parsing.aggregations_parser import SupportedReduceOperations, AggregationsParser
+from config_parsing.aggregations_parser import AggregationsParser
+from operations.aggregation_operations import SupportedReduceOperations
 
 
 class AggregationProcessor:
