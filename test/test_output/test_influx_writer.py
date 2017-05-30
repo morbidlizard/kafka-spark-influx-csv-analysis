@@ -91,6 +91,7 @@ class InfluxWriterTestCase(TestCase):
                   'rule': [{'key': False, 'input_field': 'packet_size', 'func_name': 'Min'},
                            {'key': False, 'input_field': 'traffic', 'func_name': 'Max'},
                            {'key': False, 'input_field': 'traffic2', 'func_name': 'Sum'}]}
+        enumerate_output_aggregation_field = {"packet_size": 0, "traffic": 1, "traffic2": 2}
         config = Config(CONFIG_PATH)
         self.__class__.influx_options = config.content["output"]["options"]["influx"]
 
@@ -101,7 +102,7 @@ class InfluxWriterTestCase(TestCase):
 
         self.__class__.writer = InfluxWriter(client, self.__class__.influx_options["database"],
                                              self.__class__.influx_options["measurement"],
-                                             struct)
+                                             struct, enumerate_output_aggregation_field)
 
         write_lambda = self.__class__.writer.get_write_lambda()
         t = (2, 3, 5)
@@ -122,6 +123,7 @@ class InfluxWriterTestCase(TestCase):
     def test_write_number_to_influx(self):
         struct = {'operation_type': 'reduce',
                   'rule': [{'key': False, 'input_field': 'packet_size', 'func_name': 'Min'}]}
+        enumerate_output_aggregation_field = {"packet_size": 0}
         config = Config(CONFIG_PATH)
         self.__class__.influx_options = config.content["output"]["options"]["influx"]
 
@@ -132,7 +134,7 @@ class InfluxWriterTestCase(TestCase):
 
         self.__class__.writer = InfluxWriter(client, self.__class__.influx_options["database"],
                                              self.__class__.influx_options["measurement"],
-                                             struct)
+                                             struct, enumerate_output_aggregation_field)
 
         write_lambda = self.__class__.writer.get_write_lambda()
         write_lambda(6)

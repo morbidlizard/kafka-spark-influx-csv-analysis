@@ -6,11 +6,10 @@ from .output_writer import OutputWriter
 
 
 class InfluxWriter(OutputWriter):
-    def __init__(self, client, database, measurement, input_fields):
+    def __init__(self, client, database, measurement, input_fields, enumerate_input_field):
         # name of output field. for example: max_packet_size, sum_traffic
         self.input_rule = input_fields["rule"]
-        fields = list(map(lambda x: x["input_field"], filter(lambda x: not x["key"], self.input_rule)))
-
+        fields = enumerate_input_field
         self.client, self.measurement, self.fields = client, measurement, fields
         self.client.create_database(database)
 
@@ -22,14 +21,17 @@ class InfluxWriter(OutputWriter):
             points = []
             for t in iterator:
                 tags = dict(map(lambda x, y: (x, y), key_field, t[0]))
-                fields = {fields_mapping[index]: value for index, value in enumerate(t[1:])}
+                value = t[1:]
+                fields = dict(map(lambda x: (x, value[fields_mapping[x]]), fields_mapping.keys()))
                 points.append({"measurement": measurement, "fields": fields,
                                "time": nanotime.now().nanoseconds(), "tags": tags})
             return points
 
         def make_points_from_tuple_or_number(object):
             t = object if isinstance(object, Iterable) else [object]  # tuple or number
-            fields = {fields_mapping[index]: value for index, value in enumerate(t)}
+            value = t
+            fields = dict(map(lambda x: (x, value[fields_mapping[x]]), fields_mapping.keys()))
+            # fields = {fields_mapping[index]: value for index, value in enumerate(t)}
             return [{"measurement": measurement, "fields": fields, "time": nanotime.now().nanoseconds()}]
 
         def run_necessary_lambda(rdd_or_object):
