@@ -8,12 +8,14 @@ class Dispatcher:
     def __init__(self, config):
         self.executor = ReadFactory(config).get_executor()
         self.processor = Processor(config)
-        self.writer = WriterFactory().instance_writer(config, self.processor.aggregation_output_struct)
+        self.writer = WriterFactory().instance_writer(config, self.processor.aggregation_output_struct,
+                                                      self.processor.enumerate_output_aggregation_field)
         self._isAnalysis = False
         if ("analysis" in config.content.keys()):
             self._isAnalysis = True
             self.analysis = AnalysisFactory(config,
-                                            self.processor.aggregation_output_struct).instance_analysis()
+                                            self.processor.aggregation_output_struct,
+                                            self.processor.enumerate_output_aggregation_field)
 
     def run_pipeline(self):
         processor_part = self.processor.get_pipeline_processing()

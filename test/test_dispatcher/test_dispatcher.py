@@ -11,8 +11,9 @@ from output.output_writer import OutputWriter
 
 
 class DispatcherTestCase(unittest.TestCase):
+    @mock.patch('analysis.analysis_factory.AnalysisFactory.__init__')
     @mock.patch('pyspark.sql.session.SparkSession', autospec=True)
-    def test__init__(self, mock_sparksession):
+    def test__init__(self, mock_sparksession, mock_analysis):
         mock_context = MagicMock()
         mock_context.addFile.return_value = "test"
         mock_spark = MagicMock()
@@ -21,6 +22,7 @@ class DispatcherTestCase(unittest.TestCase):
         mock_builder.getOrCreate.return_value = mock_spark
         mock_sparksession.builder
         mock_sparksession.builder.return_value = mock_builder
+        mock_analysis.return_value = None
         config = Config(os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config_dispatcher.json")))
         dispatcher = Dispatcher(config)
 

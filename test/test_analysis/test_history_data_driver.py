@@ -1,10 +1,9 @@
 import re
 import unittest
-
 from unittest.mock import Mock
 from datetime import datetime
-
 from analysis.history_data_driver import HistoryDataDriver
+
 
 class InfluxDBClientMock():
     def __new__(cls, host, port, username, password, database):
@@ -31,7 +30,6 @@ class InfluxDBClientMock():
         points = list(filter(lambda point: point["time"] > int(start) and point["time"] < int(end),
                              mock.points))
 
-
         country_result = re.search(r"\"country\"=\'(\w+)\'", query)
         if country_result:
             country = country_result.groups()[0]
@@ -39,7 +37,7 @@ class InfluxDBClientMock():
 
         for point in points:
             d = {**point["fields"], **point.get("tags", {})}
-            d["time"] = datetime.utcfromtimestamp(point["time"]//1000000000).strftime('%Y-%m-%dT%H:%M:%SZ')
+            d["time"] = datetime.utcfromtimestamp(point["time"] // 1000000000).strftime('%Y-%m-%dT%H:%M:%SZ')
             influx_points.append(d)
 
         result_wrapper.get_points.return_value = influx_points

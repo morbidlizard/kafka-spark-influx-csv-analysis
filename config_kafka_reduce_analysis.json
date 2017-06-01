@@ -4,8 +4,8 @@
     "options": {
       "server": "localhost",
       "port": 29092,
-      "topic": "demo1",
-      "batchDuration": 2,
+      "topic": "test",
+      "batchDuration": 4,
       "sep": ","
     }
   },
@@ -33,7 +33,7 @@
     "historical": {
       "method": "influx",
       "influx_options": {
-        "host":"localhost",
+        "host": "localhost",
         "port": 8086,
         "username": "root",
         "password": "root",
@@ -45,10 +45,21 @@
       "method": "stdout",
       "option": {}
     },
-    "time_delta": 20,
-    "accuracy": 3,
+    "accuracy": 2,
     "rule": {
-      "traffic": 2
+      "SimplyAnalysis": {
+        "deviation":{
+        "packet_size": 5,
+        "traffic": 8
+        },
+        "batch_number": 1
+      },
+      "AverageAnalysis": {
+        "deviation":{
+        "traffic": 4
+        },
+        "num_average": 3
+      }
     }
   },
   "databases": {

@@ -7,7 +7,7 @@ from .influx_writer import InfluxWriter
 
 
 class WriterFactory:
-    def instance_writer(self, output_config, struct):
+    def instance_writer(self, output_config, struct, enumerate_input_field):
         output = output_config.content["output"]
         if output["method"] == "csv":
             return CSVWriter(output["options"]["csv"]["path"], output["options"]["csv"]["sep"],
@@ -18,7 +18,7 @@ class WriterFactory:
                                     output["options"]["influx"]["database"])
 
             return InfluxWriter(client, output["options"]["influx"]["database"],
-                                output["options"]["influx"]["measurement"], struct)
+                                output["options"]["influx"]["measurement"], struct, enumerate_input_field)
         elif output["method"] == "stdout":
             return StdOutWriter()
 

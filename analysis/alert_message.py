@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from singleton import Singleton
 
 
@@ -16,9 +15,8 @@ class AlertMessageFactory(object):
         self._config = config
 
     def instance_alert(self):
-        if self._config["alert"]["method"] == "stdout":
+        if self._config["analysis"]["alert"]["method"] == "stdout":
             return StdOutAlert(self._config)
-
 
 
 class StdOutAlert(IAllertMessage, metaclass=Singleton):
@@ -38,5 +36,6 @@ class StdOutAlert(IAllertMessage, metaclass=Singleton):
                 parameters["lower_bound"],
                 parameters["upper_bound"],
                 parameters["value"])
-        string = "Time: {}".format(datetime.fromtimestamp(int(kwargs["timestamp"]))) + "." + string
+        string = kwargs["AnalysisModule"] + ": Time: {}".format(
+            datetime.fromtimestamp(int(kwargs["timestamp"]))) + "." + string
         print(string)
