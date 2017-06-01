@@ -1,12 +1,13 @@
-import types
 import os
-
+import types
 from unittest import TestCase
+
 from pyspark.sql import SparkSession
 
-from processor.transformation_creator import TransformationCreator
 from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
 from input.input_module import data_struct
+from operations.transformation_operations import TransformationOperations
+from processor.transformation_creator import TransformationCreator
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "test.csv"))
 
@@ -20,9 +21,12 @@ class TransformationCreatorTestCase(TestCase):
         parsed_transformations = ["src_ip", FieldTransformation("destination_ip", "dst_ip"),
                                   FieldTransformation("traffic", mult_syntax_tree)]
 
-        creator = TransformationCreator(parsed_transformations, {"country": "./mock-country.mmdb",
-                                                                 "city": "./mock-city.mmdb",
-                                                                 "asn": "./mock-asn.mmdb"})
+        creator = TransformationCreator(parsed_transformations, TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
+
         transformation = creator.build_lambda()
 
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")
@@ -54,9 +58,12 @@ class TransformationCreatorTestCase(TestCase):
         parsed_transformations = ["src_ip", FieldTransformation("destination_ip", "dst_ip"),
                                   FieldTransformation("traffic", root_mult_st)]
 
-        creator = TransformationCreator(parsed_transformations, {"country": "./mock-country.mmdb",
-                                                                 "city": "./mock-city.mmdb",
-                                                                 "asn": "./mock-asn.mmdb"})
+        creator = TransformationCreator(parsed_transformations, TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
+
         transformation = creator.build_lambda()
 
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")

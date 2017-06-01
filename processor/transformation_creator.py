@@ -1,8 +1,7 @@
 from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
-from .geo_operations import country, city, aarea
 
 class TransformationCreator:
-    def __init__(self, parsed_transformation, geoip_paths):
+    def __init__(self, parsed_transformation, transformation_operations):
         self.parsed_transformation = parsed_transformation
         self.mapping = {
             'timestamp': 0,
@@ -28,15 +27,7 @@ class TransformationCreator:
             'sampling_rate': 20,
         }
 
-        self.operations = {
-            "country": lambda ip: country(ip, geoip_paths["country"]),
-            "city": lambda ip: city(ip, geoip_paths["city"]),
-            "aarea": lambda ip: aarea(ip, geoip_paths["asn"]),
-            "sum": lambda x, y: x + y,
-            "mult": lambda x, y: x * y,
-            "div": lambda x, y: x / y,
-            "minus": lambda x, y: x - y
-        }
+        self.transformation_operations = transformation_operations
 
     def __generate_params_list(self, children, row):
         args = []
@@ -44,7 +35,7 @@ class TransformationCreator:
             if isinstance(ch, str):
                 args.append(row[self.mapping[ch]] if ch in self.mapping.keys() else ch)
             else: # ch has type syntax tree
-                operation = self.operations[ch.operation]
+                operation = self.transformation_operations.operations_dict[ch.operation]["lambda"]
                 args.append(operation(*self.__generate_params_list(ch.children,row)))
         return args
 
@@ -52,7 +43,7 @@ class TransformationCreator:
         return lambda row: row[index]
 
     def _make_operation_lambda(self, syntax_tree):
-        operation = self.operations[syntax_tree.operation]
+        operation = self.transformation_operations.operations_dict[syntax_tree.operation]["lambda"]
 
         return lambda row: operation(*self.__generate_params_list(syntax_tree.children, row))
 

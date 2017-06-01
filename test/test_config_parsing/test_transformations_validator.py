@@ -5,11 +5,16 @@ import pyspark.sql.types as types
 import errors
 from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
 from config_parsing.transformations_validator import TransformatoinsValidator
+from operations.transformation_operations import TransformationOperations
 
 
 class TransformationsValidatorTestCase(unittest.TestCase):
     def test_validate_work_success(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+        "country": "./GeoLite2-Country.mmdb",
+        "city": "./GeoLite2-City.mmdb",
+        "asn": "./GeoLite2-ASN.mmdb"
+        }))
         fields = validator.validate(["src_ip", "dst_ip", "packet_size", "sampling_rate"])
         self.assertEqual(fields, types.StructType([
             types.StructField('src_ip', types.StringType()),
@@ -19,13 +24,22 @@ class TransformationsValidatorTestCase(unittest.TestCase):
         ]), 'StructType should be equal')
 
     def test_validate_raise_field_not_exists_error(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         with self.assertRaises(errors.FieldNotExists):
             validator.validate(["src_ip", "dst_ip", "packet_size", "sample_rate"])
 
     def test_validate_rename_field(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
+
         fields = validator.validate([FieldTransformation("size", "packet_size"), "dst_ip"])
 
         self.assertEqual(fields, types.StructType([
@@ -34,12 +48,21 @@ class TransformationsValidatorTestCase(unittest.TestCase):
         ]))
 
     def test_validate_raise_field_not_exists_when_rename_field(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
+
         with self.assertRaises(errors.FieldNotExists):
             validator.validate([FieldTransformation("size", "not_exists_field"), "dst_ip"])
 
     def test_validate_raise_operation_not_supported_error(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "not_exists_operation"
@@ -48,7 +71,11 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             validator.validate([FieldTransformation("size", syntaxtree), "dst_ip"])
 
     def test_validate_raise_incorrect_arguments_amount_for_operation_error(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "sum"
@@ -58,7 +85,11 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             validator.validate([FieldTransformation("sum", syntaxtree), "dst_ip"])
 
     def test_validate_raise_incorrect_argument_type_for_operation_error(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "mult"
@@ -68,7 +99,11 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             validator.validate([FieldTransformation("traffic", syntaxtree), "dst_ip"])
 
     def test_validate_with_correct_one_level_subtree(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "mult"
@@ -82,7 +117,11 @@ class TransformationsValidatorTestCase(unittest.TestCase):
         ]))
 
     def test_validate_with_correct_two_level_subtree(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "sum"
@@ -100,7 +139,11 @@ class TransformationsValidatorTestCase(unittest.TestCase):
         ]))
 
     def test_validate_raise_constant_not_supported_error_for_subtree(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "sum"
@@ -114,7 +157,11 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             validator.validate([FieldTransformation("result", main_syntax_tree), "dst_ip"])
 
     def test_validate_raise_operation_not_supported_error_for_subtree(self):
-        validator = TransformatoinsValidator()
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "not_exists_operator"
