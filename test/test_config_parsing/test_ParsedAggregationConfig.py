@@ -6,7 +6,7 @@ from pyspark.sql import types
 from pyspark.sql.types import *
 
 from config_parsing.aggregations_parser import AggregationsParser
-from errors import NotValidAggregationExpression
+from errors.errors import NotValidAggregationExpression
 
 
 class TestConfig():

@@ -1,8 +1,6 @@
 import re
-
-from errors import NotValidAggregationExpression
+from errors.errors import NotValidAggregationExpression
 from operations.aggregation_operations import SupportedReduceOperations
-
 
 class AggregationsParser:
     def __init__(self, config, input_data_structure):

@@ -4,7 +4,7 @@ import unittest
 
 import pyspark.sql.types as types
 
-import errors
+from errors import errors
 from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
 from config_parsing.transformations_validator import TransformatoinsValidator
 from operations.transformation_operations import TransformationOperations

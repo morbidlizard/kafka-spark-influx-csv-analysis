@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from pyspark.sql import SparkSession
 
-from errors import ExecutorError
+from errors.errors import ExecutorError
 from input.executors import BatchExecutor
 
 INPUT_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "test.csv"))

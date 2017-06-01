@@ -1,7 +1,7 @@
 import os
 import unittest
 
-import errors
+from errors import errors
 from config_parsing.transformations_parser import TransformationsParser, TransformationsParserConfig, SyntaxTree, \
     FieldTransformation
 

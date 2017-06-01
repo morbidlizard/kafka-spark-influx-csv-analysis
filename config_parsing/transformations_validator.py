@@ -2,7 +2,7 @@ import re
 
 import pyspark.sql.types as types
 
-import errors
+from errors import errors
 from .transformations_parser import FieldTransformation
 
 
