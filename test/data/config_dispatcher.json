@@ -6,6 +6,7 @@
       "server": "192.168.1.1",
       "port": 29092,
       "topic": "testtag01",
+      "consumer_group": "sflow-consumer",
       "batchDuration": 10,
       "sep": ","
     }

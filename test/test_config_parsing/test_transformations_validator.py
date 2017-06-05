@@ -192,7 +192,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         main_syntax_tree = SyntaxTree()
         main_syntax_tree.operation = "truncate"
