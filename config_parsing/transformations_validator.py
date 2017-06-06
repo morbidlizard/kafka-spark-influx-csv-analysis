@@ -50,13 +50,12 @@ class TransformatoinsValidator:
         operation = self.transformation_operations.operations_dict.get(tree.operation, None)
         if operation is not None:
             if len(tree.children) == operation["operands"]:
-                for ch in tree.children:
+                for index, ch in enumerate(tree.children):
                     actual_type = None
                     if isinstance(ch, str):  # number or field name
                         result = re.search('^(\d+)$', ch)
                         if result is not None:  # it's number
-                            # actual_type = types.LongType()
-                            raise NotImplementedError("Numbers as arguments of operation not supported now")
+                             actual_type = types.LongType()
                         else:  # it's field
                             renamed_field = self.__get_field(ch)
                             actual_type = renamed_field.dataType
@@ -69,16 +68,17 @@ class TransformatoinsValidator:
 
                         self._validate_syntax_tree(ch)
 
-                    if actual_type != operation["type"]:
+
+                    if actual_type != operation["types"][index]:
                         raise errors.IncorrectArgumentTypeForOperationError(
-                            "Operand {} except operands with type {}, but {} has type {}".format(tree.operation,
-                                                                                                 operation["type"],
+                            "Operand {} expect operands with type {}, but {} has type {}".format(tree.operation,
+                                                                                                 operation["types"][index],
                                                                                                  ch,
                                                                                                  actual_type))
                 return operation["result"]
             else:
                 raise errors.IncorrectArgumentsAmountForOperationError(
-                    "Operand {} except {} operands, but actual {}".format(tree.operation, operation["operands"],
+                    "Operand {} expect {} operands, but actual {}".format(tree.operation, operation["operands"],
                                                                           len(tree.children)))
         else:
             raise errors.OperationNotSupportedError("Operation {} not supported".format(tree.operation))

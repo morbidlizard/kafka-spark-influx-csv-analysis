@@ -138,24 +138,6 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             types.StructField('dst_ip', types.StringType())
         ]))
 
-    def test_validate_raise_constant_not_supported_error_for_subtree(self):
-        validator = TransformatoinsValidator(TransformationOperations({
-            "country": "./GeoLite2-Country.mmdb",
-            "city": "./GeoLite2-City.mmdb",
-            "asn": "./GeoLite2-ASN.mmdb"
-        }))
-
-        syntaxtree = SyntaxTree()
-        syntaxtree.operation = "sum"
-        syntaxtree.children = ["1", "2"]
-
-        main_syntax_tree = SyntaxTree()
-        main_syntax_tree.operation = "mult"
-        main_syntax_tree.children = [syntaxtree, "1"]
-
-        with self.assertRaises(NotImplementedError):
-            validator.validate([FieldTransformation("result", main_syntax_tree), "dst_ip"])
-
     def test_validate_raise_operation_not_supported_error_for_subtree(self):
         validator = TransformatoinsValidator(TransformationOperations({
             "country": "./GeoLite2-Country.mmdb",
@@ -173,3 +155,34 @@ class TransformationsValidatorTestCase(unittest.TestCase):
 
         with self.assertRaises(errors.OperationNotSupportedError):
             validator.validate([FieldTransformation("result", main_syntax_tree), "dst_ip"])
+
+    def test_validate_function_with_different_arguments_type(self):
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
+
+        main_syntax_tree = SyntaxTree()
+        main_syntax_tree.operation = "truncate"
+        main_syntax_tree.children = ["src_ip", "5"]
+
+        fields = validator.validate([FieldTransformation("result", main_syntax_tree)])
+
+        self.assertEqual(fields, types.StructType([
+            types.StructField("result", types.StringType())
+        ]))
+
+    def test_validate_raise_error_for_function_with_different_arguments_type(self):
+        validator = TransformatoinsValidator(TransformationOperations({
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }))
+
+        main_syntax_tree = SyntaxTree()
+        main_syntax_tree.operation = "truncate"
+        main_syntax_tree.children = ["src_ip", "dst_ip"]
+
+        with self.assertRaises(errors.IncorrectArgumentTypeForOperationError):
+            validator.validate([FieldTransformation("result", main_syntax_tree)])

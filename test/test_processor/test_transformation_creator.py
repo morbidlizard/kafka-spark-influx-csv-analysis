@@ -53,7 +53,7 @@ class TransformationCreatorTestCase(TestCase):
 
         root_mult_st = SyntaxTree()
         root_mult_st.operation = "mult"
-        root_mult_st.children = [mult_syntax_tree, "sampling_rate"]
+        root_mult_st.children = [mult_syntax_tree, "10"]
 
         parsed_transformations = ["src_ip", FieldTransformation("destination_ip", "dst_ip"),
                                   FieldTransformation("traffic", root_mult_st)]
@@ -75,11 +75,11 @@ class TransformationCreatorTestCase(TestCase):
 
         result = result.collect()
 
-        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 37888 * 512),
-                                      ("91.221.61.168", "90.188.114.141", 34816 * 512),
-                                      ("91.226.13.80", "5.136.78.36", 773120 * 512),
-                                      ("192.168.30.2", "192.168.30.1", 94720 * 512),
-                                      ("192.168.30.2", "192.168.30.1", 94720 * 512)],
+        self.assertListEqual(result, [("217.69.143.60", "91.221.61.183", 378880),
+                                      ("91.221.61.168", "90.188.114.141", 348160),
+                                      ("91.226.13.80", "5.136.78.36", 7731200),
+                                      ("192.168.30.2", "192.168.30.1", 947200),
+                                      ("192.168.30.2", "192.168.30.1", 947200)],
                              "List of tuples should be equal")
 
         spark.stop()
