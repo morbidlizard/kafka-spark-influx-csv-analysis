@@ -46,21 +46,37 @@
       "option": {}
     },
     "accuracy": 2,
-    "rule": {
-      "SimpleAnalysis": {
-        "deviation":{
-        "packet_size": 5,
-        "traffic": 8
-        },
-        "batch_number": 1
+    "rule": [
+      {
+        "module": "SimpleAnalysis",
+        "name": "SimpleAnalysis1",
+        "option": {
+          "deviation": {
+            "packet_size": 5,
+            "traffic": 8
+          },
+          "batch_number": 1
+        }
       },
-      "AverageAnalysis": {
-        "deviation":{
-        "traffic": 4
-        },
-        "num_average": 3
+      {
+        "module": "SimpleAnalysis",
+        "name": "SimpleAnalysis2",
+        "option": {
+          "deviation": {
+            "packet_size": 5,
+            "traffic": 3
+          },
+          "batch_number": 3
+        }
+      },
+      { "module": "AverageAnalysis",
+        "name": "AverageAnalysis",
+        "option": {
+          "deviation": { "traffic": 4 },
+          "num_average": 3
+        }
       }
-    }
+    ]
   },
   "databases": {
     "country": "./GeoLite2-Country.mmdb",

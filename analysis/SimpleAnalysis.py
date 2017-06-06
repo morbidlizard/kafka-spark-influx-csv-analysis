@@ -3,8 +3,8 @@ from analysis.iuseranalysis import IUserAnalysis
 
 
 class SimpleAnalysis(IUserAnalysis):
-    def __init__(self, option):
-        super().__init__(option)
+    def __init__(self, option, name):
+        super().__init__(option, name)
         self._deviations = option["deviation"]
         self._batch_number = option["batch_number"]
 
@@ -18,7 +18,7 @@ class SimpleAnalysis(IUserAnalysis):
 
                 current_value_vec = historical_data[0]
                 if (current_value_vec[field] < lower_bound) or (current_value_vec[field] > upper_bound):
-                    alert_sender.send_message(AnalysisModule="SimpleAnalysis", timestamp=time(),
+                    alert_sender.send_message(AnalysisModule=self.name, timestamp=time(),
                                               param={"key": current_value_vec["key"],
                                                      "field": field,
                                                      "lower_bound": lower_bound,
