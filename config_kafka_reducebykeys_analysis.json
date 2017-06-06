@@ -42,8 +42,12 @@
       }
     },
     "alert": {
-      "method": "stdout",
-      "option": {}
+      "method": "kafka",
+      "option": {
+        "server": "localhost",
+        "port": 29092,
+        "topic": "testalert"
+      }
     },
     "accuracy": 3,
     "rule": {

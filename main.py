@@ -1,6 +1,5 @@
 import sys
 import logging
-import time
 from config_parsing.config import Config
 from dispatcher.dispatcher import Dispatcher
 

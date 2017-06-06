@@ -1,4 +1,7 @@
 from importlib import import_module
+
+from kafka import KafkaProducer
+
 from analysis.alert_message import AlertMessageFactory
 from analysis.historical_delivery import HistoricalDataDeliveryFactory
 from analysis.historical_data import HistoricalData

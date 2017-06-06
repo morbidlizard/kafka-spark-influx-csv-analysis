@@ -1,5 +1,14 @@
+import json
+import random
 from datetime import datetime
+from kafka import KafkaProducer
 from singleton import Singleton
+
+
+class SingleKafkaProducer(KafkaProducer, metaclass=Singleton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.test_var = random.randint(0, 100)
 
 
 class IAllertMessage(object):
@@ -17,6 +26,8 @@ class AlertMessageFactory(object):
     def instance_alert(self):
         if self._config["analysis"]["alert"]["method"] == "stdout":
             return StdOutAlert(self._config)
+        elif self._config["analysis"]["alert"]["method"] == "kafka":
+            return KafkaOutAlert(self._config)
 
 
 class StdOutAlert(IAllertMessage, metaclass=Singleton):
@@ -39,3 +50,15 @@ class StdOutAlert(IAllertMessage, metaclass=Singleton):
         string = kwargs["AnalysisModule"] + ": Time: {}".format(
             datetime.fromtimestamp(int(kwargs["timestamp"]))) + "." + string
         print(string)
+
+
+class KafkaOutAlert(IAllertMessage, metaclass=Singleton):
+    def __init__(self, config):
+        super().__init__(config)
+        self._topic = config["analysis"]["alert"]["option"]["topic"]
+
+    def send_message(self, **kwargs):
+        producer = SingleKafkaProducer(bootstrap_servers=self._config["analysis"]["alert"]["option"]["server"] + ":" +
+                                                         str(self._config["analysis"]["alert"]["option"]["port"]))
+        producer.send(self._topic, str.encode(json.dumps(kwargs)))
+        producer.flush()
