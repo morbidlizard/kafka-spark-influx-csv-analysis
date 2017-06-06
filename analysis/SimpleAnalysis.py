@@ -2,7 +2,7 @@ from time import time
 from analysis.iuseranalysis import IUserAnalysis
 
 
-class SimplyAnalysis(IUserAnalysis):
+class SimpleAnalysis(IUserAnalysis):
     def __init__(self, option):
         super().__init__(option)
         self._deviations = option["deviation"]
@@ -18,7 +18,7 @@ class SimplyAnalysis(IUserAnalysis):
 
                 current_value_vec = historical_data[0]
                 if (current_value_vec[field] < lower_bound) or (current_value_vec[field] > upper_bound):
-                    alert_sender.send_message(AnalysisModule="SimplyAnalysis", timestamp=time(),
+                    alert_sender.send_message(AnalysisModule="SimpleAnalysis", timestamp=time(),
                                               param={"key": current_value_vec["key"],
                                                      "field": field,
                                                      "lower_bound": lower_bound,
