@@ -5,15 +5,16 @@ from .transformation_creator import TransformationCreator
 
 
 class TransformationProcessor:
-    def __init__(self, transformations, geoip_paths):
-        transformations_parser = TransformationsParser(transformations)
+    def __init__(self, config):
+        transformations_parser = TransformationsParser(config.content["processing"]["transformation"])
         transformations_parser.run()
 
-        operations = TransformationOperations(geoip_paths)
+        operations = TransformationOperations(config.content["databases"])
 
-        transformations_validator = TransformatoinsValidator(operations)
+        transformations_validator = TransformatoinsValidator(operations, config.data_structure_pyspark)
         self.fields = transformations_validator.validate(transformations_parser.expanded_transformation)
 
-        transformations_creator = TransformationCreator(transformations_parser.expanded_transformation, operations)
+        transformations_creator = TransformationCreator(config.data_structure,
+                                                        transformations_parser.expanded_transformation, operations)
         row_transformations = transformations_creator.build_lambda()
         self.transformation = lambda rdd: rdd.map(row_transformations)

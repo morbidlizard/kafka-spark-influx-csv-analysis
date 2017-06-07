@@ -1,11 +1,12 @@
+import json
 import os
 import types
+from pyspark.sql import types as types_spark
 from unittest import TestCase
 
 from pyspark.sql import SparkSession
 
 from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
-from input.input_module import data_struct
 from operations.transformation_operations import TransformationOperations
 from processor.transformation_creator import TransformationCreator
 
@@ -13,6 +14,18 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "
 
 
 class TransformationCreatorTestCase(TestCase):
+    def setUp(self):
+        with open(os.path.join(os.path.dirname(__file__),
+                               os.path.join("..", "data", "config_data_structure.json"))) as cfg:
+            data_structure = json.load(cfg)
+
+        self.data_structure = data_structure
+        data_structure_list = list(map(lambda x: (x, data_structure[x]), data_structure.keys()))
+        data_structure_sorted = sorted(data_structure_list, key=lambda x: x[1]["index"])
+        self.data_structure_pyspark = types_spark.StructType(
+            list(map(lambda x: types_spark.StructField(x[0], getattr(types_spark, x[1]["type"])()),
+                     data_structure_sorted)))
+
     def test_build_lambda(self):
         mult_syntax_tree = SyntaxTree()
         mult_syntax_tree.operation = "mult"
@@ -21,7 +34,7 @@ class TransformationCreatorTestCase(TestCase):
         parsed_transformations = ["src_ip", FieldTransformation("destination_ip", "dst_ip"),
                                   FieldTransformation("traffic", mult_syntax_tree)]
 
-        creator = TransformationCreator(parsed_transformations, TransformationOperations({
+        creator = TransformationCreator(self.data_structure, parsed_transformations, TransformationOperations({
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
@@ -32,7 +45,7 @@ class TransformationCreatorTestCase(TestCase):
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")
 
         spark = SparkSession.builder.getOrCreate()
-        file = spark.read.csv(DATA_PATH, data_struct)
+        file = spark.read.csv(DATA_PATH, self.data_structure_pyspark)
 
         result = file.rdd.map(transformation)
 
@@ -58,7 +71,7 @@ class TransformationCreatorTestCase(TestCase):
         parsed_transformations = ["src_ip", FieldTransformation("destination_ip", "dst_ip"),
                                   FieldTransformation("traffic", root_mult_st)]
 
-        creator = TransformationCreator(parsed_transformations, TransformationOperations({
+        creator = TransformationCreator(self.data_structure, parsed_transformations, TransformationOperations({
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
@@ -69,7 +82,7 @@ class TransformationCreatorTestCase(TestCase):
         self.assertIsInstance(transformation, types.LambdaType, "Transformation type should be lambda")
 
         spark = SparkSession.builder.getOrCreate()
-        file = spark.read.csv(DATA_PATH, data_struct)
+        file = spark.read.csv(DATA_PATH, self.data_structure_pyspark)
 
         result = file.rdd.map(transformation)
 

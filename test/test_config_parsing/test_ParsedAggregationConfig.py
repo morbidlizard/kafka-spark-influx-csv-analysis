@@ -1,36 +1,12 @@
+import json
+import os
 from unittest import TestCase
 
+from pyspark.sql import types
 from pyspark.sql.types import *
 
 from config_parsing.aggregations_parser import AggregationsParser
 from errors import NotValidAggregationExpression
-
-timestamp = StructField('timestamp', LongType())  # 1
-flow_indicator = StructField('FLOW_indicator', StringType())  # 2
-agent_address = StructField('agent_address', StringType())  # 3
-input_port = StructField('input_port', IntegerType())  # 4
-output_port = StructField('output_port', IntegerType())  # 5
-src_mac = StructField('src_mac', StringType())  # 6
-dst_mac = StructField('dst_mac', StringType())  # 7
-ethernet_type = StructField('ethernet_type', StringType())  # 8
-in_vlan = StructField('in_vlan', IntegerType())  # 9
-out_vlan = StructField('out_vlan', IntegerType())  # 10
-src_ip = StructField('src_ip', StringType())  # 11
-dst_ip = StructField('dst_ip', StringType())  # 12
-ip_protocol = StructField('ip_protocol', StringType())  # 13
-ip_tos = StructField('ip_tos', StringType())  # 14
-ip_ttl = StructField('ip_ttl', StringType())  # 15
-src_port_or_icmp_type = StructField('src_port_or_icmp_type', IntegerType())  # 16
-dst_port_or_icmp_code = StructField('dst_port_or_icmp_code', IntegerType())  # 17
-tcp_flags = StructField('tcp_flags', StringType())  # 18
-packet_size = StructField('packet_size', LongType())  # 19
-ip_size = StructField('ip_size', IntegerType())  # 20
-sampling_rate = StructField('sampling_rate', IntegerType())  # 21
-
-data_struct = StructType([timestamp, flow_indicator, agent_address, input_port, output_port,
-                          src_mac, dst_mac, ethernet_type, in_vlan, out_vlan, src_ip, dst_ip,
-                          ip_protocol, ip_tos, ip_ttl, src_port_or_icmp_type, dst_port_or_icmp_code,
-                          tcp_flags, packet_size, ip_size, sampling_rate])
 
 
 class TestConfig():
@@ -39,12 +15,26 @@ class TestConfig():
 
 
 class TestAggregationsParser(TestCase):
+    def setUp(self):
+        with open(os.path.join(os.path.dirname(__file__),
+                               os.path.join("..", "data", "config_data_structure.json"))) as cfg:
+            data_structure = json.load(cfg)
+
+        self.data_structure = data_structure
+        data_structure_list = list(map(lambda x: (x, data_structure[x]), data_structure.keys()))
+        data_structure_sorted = sorted(data_structure_list, key=lambda x: x[1]["index"])
+        self.data_structure_pyspark = types.StructType(
+            list(map(lambda x: types.StructField(x[0], getattr(types, x[1]["type"])()),
+                     data_structure_sorted)))
+
     def test_get_parse_expression(self):
         test_input_rule = "key = input_port; Sum(packet_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, StructType([input_port,packet_size,]))
+        input_port = StructField('input_port', IntegerType())
+        packet_size = StructField('packet_size', LongType())
+        test_aggregation_config = AggregationsParser(config, StructType([input_port, packet_size, ]))
         test_expression_token = test_aggregation_config.get_parse_expression()
         self.assertIsInstance(test_expression_token, dict,
                               "Return value of the get_parse_expression method should be instance of dict")
@@ -60,7 +50,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
 
         with self.assertRaisesRegexp(NotValidAggregationExpression, "^Unsupported function\(s\): {'Count'}$"):
             test_expression_token = test_aggregation_config.get_parse_expression()
@@ -68,7 +58,7 @@ class TestAggregationsParser(TestCase):
     def test__field_validation(self):
         config = TestConfig({"processing": {"aggregations": {"operation_type": "",
                                                              "rule": ""}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
 
         test_parse = test_aggregation_config._field_validation([('Count', 'field_name2')],
                                                                "Count(field_name2):new_field_name2")
@@ -97,7 +87,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         test_expression_token = test_aggregation_config._parse_reduce()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_reduce method should be instance of list")
@@ -111,7 +101,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce()
         self.assertTrue("Find not valid characters" in context.exception.args[0],
@@ -124,7 +114,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce()
         self.assertTrue("Error in the rule" in context.exception.args[0],
@@ -135,7 +125,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         self.assertTrue(test_aggregation_config._check_unique_key_field([{"input_field": "test1", "key": False},
                                                                          {"input_field": "test2", "key": False}]),
                         "Return value should be true if the input list don't contain key fields with true value")
@@ -148,7 +138,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_reduce_by_key method should be instance of list")
@@ -163,7 +153,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_reduce_by_key method should be instance of list")
@@ -177,7 +167,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Not uniqueness key field" in context.exception.args[0],
@@ -190,7 +180,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("don't contain key field" in context.exception.args[0],
@@ -203,7 +193,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Error in the rule" in context.exception.args[0],
@@ -216,7 +206,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("The number of opening and closing parentheses" in context.exception.args[0],
@@ -229,7 +219,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Find not valid characters" in context.exception.args[0],
@@ -242,7 +232,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_reduce_by_key()
         self.assertTrue("Error in the rule" in context.exception.args[0],
@@ -253,7 +243,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         test_expression_token = test_aggregation_config._parse_expression()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_expression method should be instance of list")
@@ -262,7 +252,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduce"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         test_expression_token = test_aggregation_config._parse_expression()
         self.assertIsInstance(test_expression_token, list,
                               "Return value of the _pars_expression method should be instance of list")
@@ -271,7 +261,7 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "groupBy"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
 
         with self.assertRaises(NotValidAggregationExpression) as context:
             test_expression_token = test_aggregation_config._parse_expression()
@@ -284,7 +274,10 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, StructType([input_port,in_vlan,ip_size]))
+        input_port = StructField('input_port', IntegerType())
+        in_vlan = StructField('in_vlan', IntegerType())
+        ip_size = StructField('ip_size', IntegerType())
+        test_aggregation_config = AggregationsParser(config, StructType([input_port, in_vlan, ip_size]))
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
 
         with self.assertRaisesRegex(NotValidAggregationExpression, "^Unsupported function\(s\): {'Sin'}$"):
@@ -295,11 +288,12 @@ class TestAggregationsParser(TestCase):
         test_input_rule = "key = input_port;Min(in_vlan_bad); Sum(ip_size)"
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
-                                                         "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, data_struct)
+                                                             "rule": test_input_rule}}})
+        test_aggregation_config = AggregationsParser(config, self.data_structure_pyspark)
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
 
-        with self.assertRaisesRegex(NotValidAggregationExpression, "^Unsupported or unused field\(s\): {'in_vlan_bad'}$"):
+        with self.assertRaisesRegex(NotValidAggregationExpression,
+                                    "^Unsupported or unused field\(s\): {'in_vlan_bad'}$"):
             test_validation = test_aggregation_config._types_and_field_names_validation()
 
     def test__types_and_fields_validation_raise_already_aggregated_field_exception(self):
@@ -307,6 +301,8 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
+        src_ip = StructField('src_ip', StringType())
+        packet_size = StructField('packet_size', LongType())
         test_aggregation_config = AggregationsParser(config, StructType([src_ip, packet_size]))
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
 
@@ -319,8 +315,12 @@ class TestAggregationsParser(TestCase):
         test_input_operation = "reduceByKey"
         config = TestConfig({"processing": {"aggregations": {"operation_type": test_input_operation,
                                                              "rule": test_input_rule}}})
-        test_aggregation_config = AggregationsParser(config, StructType([input_port,dst_mac,ip_size]))
+        input_port = StructField('input_port', IntegerType())
+        ip_size = StructField('ip_size', IntegerType())
+        dst_mac = StructField('dst_mac', StringType())
+        test_aggregation_config = AggregationsParser(config, StructType([input_port, dst_mac, ip_size]))
         test_aggregation_config._expression = test_aggregation_config._parse_expression()
 
-        with self.assertRaisesRegex(NotValidAggregationExpression, "^Incorrect type of field dst_mac for function Min$"):
+        with self.assertRaisesRegex(NotValidAggregationExpression,
+                                    "^Incorrect type of field dst_mac for function Min$"):
             test_validation = test_aggregation_config._types_and_field_names_validation()

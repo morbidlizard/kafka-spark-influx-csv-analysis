@@ -4,7 +4,7 @@ from .aggregation_processor import AggregationProcessor
 
 class Processor:
     def __init__(self, config):
-        transformation_processor = TransformationProcessor(config.content["processing"]["transformation"],config.content["databases"])
+        transformation_processor = TransformationProcessor(config)
         self.transformation = transformation_processor.transformation
 
         self.transformation_processor_fields = transformation_processor.fields

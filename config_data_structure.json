@@ -1,0 +1,23 @@
+{
+  "timestamp": {"index":0, "type": "LongType"},
+  "FLOW_indicator": {"index":1, "type": "StringType"},
+  "agent_address": {"index":2, "type": "StringType"},
+  "input_port": {"index":3, "type": "IntegerType"},
+  "output_port": {"index":4, "type": "IntegerType"},
+  "src_mac": {"index":5, "type": "StringType"},
+  "dst_mac": {"index":6, "type": "StringType"},
+  "ethernet_type": {"index":7, "type": "StringType"},
+  "in_vlan": {"index":8, "type": "IntegerType"},
+  "out_vlan": {"index":9, "type": "IntegerType"},
+  "src_ip": {"index":10, "type": "StringType"},
+  "dst_ip": {"index":11, "type": "StringType"},
+  "ip_protocol": {"index":12, "type": "StringType"},
+  "ip_tos": {"index":13, "type": "StringType"},
+  "ip_ttl": {"index":14, "type": "StringType"},
+  "src_port_or_icmp_type": {"index":15, "type": "IntegerType"},
+  "dst_port_or_icmp_code": {"index":16, "type": "IntegerType"},
+  "tcp_flags": {"index":17, "type": "StringType"},
+  "packet_size": {"index":18, "type": "LongType"},
+  "ip_size": {"index":19, "type": "IntegerType"},
+  "sampling_rate": {"index":20, "type": "LongType"}
+}
