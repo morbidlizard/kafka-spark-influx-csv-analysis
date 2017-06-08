@@ -39,22 +39,24 @@ class AnalysisFactory(object):
         alert_sender_singleton = self._alert_sender
         historical_data_repository_singleton = self._historical_data_repository
         measurement = self._config["analysis"]["historical"]["influx_options"]["measurement"]
-        config_analysis = self._config["analysis"]["rule"]
+        user_analysis_module = self._config["analysis"]["rule"]
 
-        user_analysis_name = config_analysis.keys()
         user_analysis = []
         missing_dependencies = []
 
-        for user_module in user_analysis_name:
+        for user_module in user_analysis_module:
             try:
-                user_analysis.append({"name": user_module, "import_module": import_module("analysis." + user_module)})
+                user_analysis.append(
+                    {"module": user_module["module"], "name": user_module["name"],
+                     "import_module": import_module("analysis." + user_module["module"]),
+                     "options": user_module["options"]})
             except ImportError as e:
                 missing_dependencies.append(user_module)
 
         if missing_dependencies:
             raise ImportError("Missing required analysis module {0}".format(missing_dependencies))
 
-        user_object_analysis = list(map(lambda x: getattr(x["import_module"], x["name"])(config_analysis[x["name"]]),
+        user_object_analysis = list(map(lambda x: getattr(x["import_module"], x["module"])(x["options"], x["name"]),
                                         user_analysis))
 
         historical_data = HistoricalData(historical_data_repository_singleton, self._input_fields, measurement,

@@ -3,8 +3,8 @@ from analysis.iuseranalysis import IUserAnalysis
 
 
 class AverageAnalysis(IUserAnalysis):
-    def __init__(self, option):
-        super().__init__(option)
+    def __init__(self, option, name):
+        super().__init__(option, name)
         self._deviations = option["deviation"]
         self._num_average = option["num_average"]
 
@@ -30,7 +30,7 @@ class AverageAnalysis(IUserAnalysis):
 
                 current_value = historical_data[0][field]
                 if (current_value < lower_bound) or (current_value > upper_bound):
-                    alert_sender.send_message(AnalysisModule="AverageAnalysis", timestamp=time(),
+                    alert_sender.send_message(AnalysisModule=self.name, timestamp=time(),
                                               param={"key": historical_data[0]["key"],
                                                      "field": field,
                                                      "lower_bound": lower_bound,

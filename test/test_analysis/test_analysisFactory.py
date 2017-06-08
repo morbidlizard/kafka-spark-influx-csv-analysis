@@ -33,15 +33,30 @@ class TestAnalysisFactory(TestCase):
                         "option": {}
                     },
                     "accuracy": 3,
-                    "rule": {
-                        "MockAnalysis": {
-                            "deviation": {
-                                "packet_size": 5,
-                                "traffic": 8
-                            },
-                            "batch_number": 1
-                        }
-                    }
+                    "rule": [
+                        {
+                            "module": "MockAnalysis",
+                            "name": "MockAnalysis1",
+                            "options": {
+                                "deviation": {
+                                    "packet_size": 5,
+                                    "traffic": 8
+                                },
+                                "batch_number": 1
+                            }
+                        },
+                        {
+                            "module": "MockAnalysis",
+                            "name": "MockAnalysis2",
+                            "options": {
+                                "deviation": {
+                                    "packet_size": 5,
+                                    "traffic": 3
+                                },
+                                "batch_number": 3
+                            }
+                        },
+                    ]
                 }
             })
 
@@ -178,17 +193,33 @@ class TestAnalysisFactory(TestCase):
                         "option": {}
                     },
                     "accuracy": 3,
-                    "rule": {
-                        "TestException": {
-                            "deviation": {
-                                "packet_size": 5,
-                                "traffic": 8
-                            },
-                            "batch_number": 1
-                        }
+                    "rule": [
+                        {
+                            "module": "TestException",
+                            "name": "TestException1",
+                            "option": {
+                                "deviation": {
+                                    "packet_size": 5,
+                                    "traffic": 8
+                                },
+                                "batch_number": 1
+                            }
+                        },
+                        {
+                            "module": "TestException",
+                            "name": "TestException2",
+                            "option": {
+                                "deviation": {
+                                    "packet_size": 5,
+                                    "traffic": 3
+                                },
+                                "batch_number": 3
+                            }
+                        },
+                    ]
                     }
                 }
-            })
+            )
 
         mock_history_data_singleton = MagicMock()
         mock_data_delivery.return_value = mock_history_data_singleton
