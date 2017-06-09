@@ -22,14 +22,14 @@ class Executor:
         run_pipeline runs execution of pipeline actions on the data
         :return: None
         """
-        print("Override me in child classes!")
+        print("Override me in child classes!") # change to raise not implemented
 
     def stop_pipeline(self):
         """
         run_pipeline runs execution of pipeline actions on the data
         :return: None
         """
-        print("Override me in child classes!")
+        print("Override me in child classes!") # change to raise not implemented
 
     def set_pipeline_processing(self, action, options):
         """
@@ -38,7 +38,7 @@ class Executor:
         :param options: options of pipeline
         :return: None
         """
-        print("Override me in child classes!")
+        print("Override me in child classes!") # change to raise not implemented
 
 
 class StreamingExecutor(Executor):
@@ -67,7 +67,7 @@ class StreamingExecutor(Executor):
         """
 
         self._action = action
-        self._options = options
+        self._options = options # what for?
 
     def stop_pipeline(self):
         self._ssc.stop(stopSparkContext=True, stopGraceFully=True)

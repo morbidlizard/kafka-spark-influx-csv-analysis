@@ -55,7 +55,7 @@ class AnalysisFactory(object):
             raise ImportError("Missing required analysis module {0}".format(missing_dependencies))
 
         user_object_analysis = list(map(lambda x: getattr(x["import_module"], x["name"])(config_analysis[x["name"]]),
-                                        user_analysis))
+                                        user_analysis)) # need comment
 
         historical_data = HistoricalData(historical_data_repository_singleton, self._input_fields, measurement,
                                          self._accuracy, self._key_fields_name, self._batch_duration)

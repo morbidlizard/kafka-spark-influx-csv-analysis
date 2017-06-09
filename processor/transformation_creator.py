@@ -50,13 +50,13 @@ class TransformationCreator:
     def build_lambda(self):
         lambdas = []
         for exp_tr in self.parsed_transformation:
-            if isinstance(exp_tr, FieldTransformation):
-                if isinstance(exp_tr.operation, str):
-                    lambdas.append(self._get_column_value_lambda(self.mapping[exp_tr.operation]))
+            if isinstance(exp_tr, FieldTransformation): # it's transformed name
+                if isinstance(exp_tr.operation, str): # it's rename
+                    lambdas.append(self._get_column_value_lambda(self.mapping[exp_tr.operation])) # just get field by index
                 else:
                     syntax_tree = exp_tr.operation
                     lambdas.append(self._make_operation_lambda(syntax_tree))
             else:
-                lambdas.append(self._get_column_value_lambda(self.mapping[exp_tr]))
+                lambdas.append(self._get_column_value_lambda(self.mapping[exp_tr])) # just get field by index
 
         return lambda row: (tuple(map(lambda x: x(row), lambdas)))

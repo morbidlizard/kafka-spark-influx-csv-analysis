@@ -10,9 +10,11 @@ class WriterFactory:
     def instance_writer(self, output_config, struct, enumerate_input_field):
         output = output_config.content["output"]
         if output["method"] == "csv":
+            # extract params to separate hash and use as func(**kwargs)
             return CSVWriter(output["options"]["csv"]["path"], output["options"]["csv"]["sep"],
                              output["options"]["csv"]["encoding"])
         elif output["method"] == "influx":
+            # extract params to separate hash and use as func(**kwargs)
             client = InfluxDBClient(output["options"]["influx"]["host"], output["options"]["influx"]["port"],
                                     output["options"]["influx"]["username"], output["options"]["influx"]["password"],
                                     output["options"]["influx"]["database"])

@@ -49,6 +49,7 @@ def type_to_func(type_field):
     if type_field == StringType():
         return string_to_string
 
+#need only for test
 class InputConfig:
     """
     InputConfig is a class for reading config file to input module.
@@ -110,6 +111,7 @@ class KafkaStreaming(object):
         self._ssc = StreamingContext(sc, self._batchDuration)
 
         # self._dstream = KafkaUtils.createStream(ssc, kafka_server, "id-consumer", {self._topic: 1})
+        # need comments
         list_conversion_function = list((map(lambda x: type_to_func(x.dataType), data_struct)))
         ranked_pointer = list(enumerate(list_conversion_function))
         functions_list = list(map(lambda x: lambda list_string: x[1](list_string[x[0]]), ranked_pointer))

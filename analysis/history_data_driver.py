@@ -12,6 +12,7 @@ class HistoryDataDriver:
         self.client = client
 
     def read(self, measurement, from_nanoseconds, to_nanoseconds, tag=None):
+        """ Get points between (from_nanoseconds;to_nanoseconds) from measurement by tag"""
         query = "SELECT * from {0} WHERE time > {1} AND time < {2}".format(measurement, from_nanoseconds,
                                                                            to_nanoseconds)
         if tag:

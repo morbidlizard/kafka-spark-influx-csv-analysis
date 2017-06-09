@@ -1,3 +1,4 @@
+# use only for tests, move
 import json
 
 class OutputConfig:

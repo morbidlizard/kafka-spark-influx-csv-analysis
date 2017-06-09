@@ -15,7 +15,7 @@ class SyntaxTree:
     def append_child(self, child):
         self.children += [child]
 
-    def show(self, shift):
+    def show(self, shift): # helper method, later should be deleted?
         print(" " * shift * 2 + "operation: {}, has {} children: ".format(self.operation, len(self.children)))
         for ch in self.children:
             if isinstance(ch, SyntaxTree):
@@ -28,8 +28,8 @@ class TransformationsParser:
         self.transformations = transformations
         self.expanded_transformation = [] # string or FieldTransformation
 
-    def _parse(self, args):
-        result = re.search(r'(\w+)\((.*)\)', args)
+    def _parse(self, args): # parse function or field expression
+        result = re.search(r'(\w+)\((.*)\)', args) # try match function
         tree = SyntaxTree()
 
         if result is not None:
@@ -37,7 +37,7 @@ class TransformationsParser:
             index, start_index, end_index = 0, 0, 0
 
             while index < len(arguments):
-                if arguments[index] == "(":  # try find function
+                if arguments[index] == "(":  # find list function arguments
                     open_bracket, close_bracket = 1, 0
                     for i in range(index + 1, len(arguments)):
                         if arguments[i] == "(":
@@ -46,13 +46,13 @@ class TransformationsParser:
                             close_bracket += 1
 
                         if open_bracket == close_bracket:
-                            end_index = i
+                            end_index = i # index last ")"
 
-                            child = self._parse(arguments[start_index:end_index + 1])
+                            child = self._parse(arguments[start_index:end_index + 1]) # extract arguments list
                             tree.append_child(child)
 
-                            start_index = index = i
-                            if i + 2 < len(arguments) and arguments[i + 1] == ",":
+                            start_index = index = i # (equal end_index)
+                            if i + 2 < len(arguments) and arguments[i + 1] == ",": # if we have smth after this function
                                 start_index = i + 2  # eat 2 and start from new
                                 index = i + 1
 
@@ -63,7 +63,7 @@ class TransformationsParser:
                             "Incorrect expression: {} open brackets and {} close brackets ".format(open_bracket,
                                                                                                    close_bracket))
 
-                elif arguments[index] == ",":
+                elif arguments[index] == ",": # extract field name from list like param1,param2,param3
                     end_index = index
                     child = self._parse(arguments[start_index:end_index])
                     tree.append_child(child)
@@ -77,7 +77,7 @@ class TransformationsParser:
 
             return tree
         else:
-            return args
+            return args # return field name
 
     def run(self):
         tokenized_transformation = list(map(lambda field: field.strip(), self.transformations.split(";")))
@@ -88,6 +88,7 @@ class TransformationsParser:
                 new_field, field_or_expression = list(map(lambda t: t.strip(), token.split(":")))
                 self.expanded_transformation.append(FieldTransformation(new_field, self._parse(field_or_expression)))
 
+# this class necessary only for test
 class TransformationsParserConfig:
     def __init__(self, path_to_config):
         self.path = path_to_config

@@ -8,6 +8,7 @@ from .output_writer import OutputWriter
 
 class CSVWriter(OutputWriter):
     def __init__(self, path, sep=";", encoding="utf-8"):
+        # for 3 arguments use parallel assignment ?
         self.path = path
         self.sep = sep
         self.encoding = encoding
@@ -20,6 +21,8 @@ class CSVWriter(OutputWriter):
                     data = self.spark.createDataFrame(rdd_or_object).toPandas()
                 else:
                     data = pandas.DataFrame([])
+                # seems shorter:
+                # data = self.spark.createDataFrame(rdd_or_object).toPandas() if not rdd_or_object.isEmpty() else data = pandas.DataFrame([])
             else:
                 data = pandas.DataFrame.from_records(
                     [rdd_or_object] if isinstance(rdd_or_object, Iterable) else [(rdd_or_object,)])

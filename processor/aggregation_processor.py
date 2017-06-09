@@ -22,7 +22,7 @@ class AggregationProcessor:
             # (key_index,key_struct_field)
             for key_struct in key_struct_list:
                 self.key_data.append((self._input_field_name.index(key_struct["input_field"]), key_struct))
-            for key_struct in key_struct_list:
+            for key_struct in key_struct_list: # delete keys from aggregation data
                 aggregation_data["rule"].remove(key_struct)
                 self._input_field_name.remove(key_struct["input_field"])
 
@@ -30,21 +30,22 @@ class AggregationProcessor:
                                     aggregation_data["rule"]}
         self._enumerate_output_field = dict(map(lambda x: (x[1], x[0]), enumerate(self._input_field_name)))
 
+    # change fields visibility
     def get_enumerate_field(self):
         return self._enumerate_output_field
 
     def get_output_structure(self):
         return self._aggregation_expression
 
-    # input row: (field_1,..,key,..field_n) -> (key, (field_1,..field_n))
+    # input row: (field_1,..,key,..field_n) -> ((key_1,..key_n), (field_1,..field_n))
     def _build_separate_key_lambda(self):
         num_field = [self._input_data_structure.names.index(field) for field in self._input_field_name]
-        lambdas_key = list(map(lambda x: lambda row: row[x[0]], self.key_data))
+        lambdas_key = list(map(lambda x: lambda row: row[x[0]], self.key_data)) # get field by index (x[0])
         lambdas_field = list(map(lambda x: lambda row: row[x], num_field))
         return lambda row: (tuple(map(lambda x: x(row), lambdas_key)),
                             tuple(map(lambda x: x(row), lambdas_field)))
 
-    # input row: (key, (field_1,..field_n)) -> (key,field_1,..,field_n)
+    # ?? struct row
     def _bulid_postprocessing_lambda(self):
         postprocessing = lambda row: tuple([row[0]] + list(row[1]))
         return lambda rdd: rdd.map(postprocessing)
