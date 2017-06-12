@@ -11,6 +11,7 @@ class Dispatcher:
         self.writer = WriterFactory().instance_writer(config, self.processor.aggregation_output_struct,
                                                       self.processor.enumerate_output_aggregation_field)
         self._isAnalysis = False
+
         if ("analysis" in config.content.keys()):
             self._isAnalysis = True
             self.analysis = AnalysisFactory(config,
