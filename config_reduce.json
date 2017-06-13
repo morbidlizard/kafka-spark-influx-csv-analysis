@@ -3,7 +3,8 @@
     "input_type": "kafka",
     "options": {
       "server": "localhost",
-      "port": 29092,
+      "port": 32181,
+      "consumer_group": "sflow-consumer",
       "topic": "test",
       "batchDuration": 4,
       "sep": ","

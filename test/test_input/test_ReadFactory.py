@@ -32,8 +32,10 @@ class ReadFactoryTestCase(unittest.TestCase):
         factory = ReadFactory(config)
         test_executor = factory.get_executor()
 
+
         self.assertIsInstance(test_executor, StreamingExecutor,
                               "When read csv file executor should be instance of BatchExecutable")
+
 
     def test_exeption_on_error1_in_input_config(self):
         config = InputConfig(INCORRECT_CONFIG1_PATH)

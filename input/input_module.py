@@ -1,4 +1,5 @@
 import json
+
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.streaming import StreamingContext
@@ -70,18 +71,20 @@ class ReadFactory():
 
 class KafkaStreaming(object):
     def __init__(self, config):
+
         self._server = config.content["input"]["options"]["server"]
         self._port = config.content["input"]["options"]["port"]
         self._topic = config.content["input"]["options"]["topic"]
+        self._consumer_group = config.content["input"]["options"]["consumer_group"]
         self._batchDuration = config.content["input"]["options"]["batchDuration"]
         self._sep = config.content["input"]["options"]["sep"]
+
         self._spark = SparkSession.builder.appName("StreamingDataKafka").getOrCreate()
         sc = self._spark.sparkContext
         sc.addFile(config.content["databases"]["country"])
         sc.addFile(config.content["databases"]["city"])
         sc.addFile(config.content["databases"]["asn"])
 
-        kafka_server = self._server + ":" + str(self._port)
         self._ssc = StreamingContext(sc, self._batchDuration)
 
         list_conversion_function = list((map(lambda x: type_to_func(x.dataType), config.data_structure_pyspark)))
@@ -89,11 +92,11 @@ class KafkaStreaming(object):
         functions_list = list(map(lambda x: lambda list_string: x[1](list_string[x[0]]), ranked_pointer))
         function_convert = lambda x: list(map(lambda func: func(x), functions_list))
         try:
-            dstream = KafkaUtils.createDirectStream(self._ssc, [self._topic], {"metadata.broker.list": kafka_server})
+            dstream = KafkaUtils.createStream(self._ssc, "{0}:{1}".format(self._server, self._port), self._consumer_group, {self._topic: 1})
             self._dstream = dstream.map(lambda x: function_convert(x[1].split(",")))
         except:
-            raise KafkaConnectError("Kafka error: Connection refused: server={} port={} topic={}".
-                                    format(self._server, self._port, self._topic))
+            raise KafkaConnectError("Kafka error: Connection refused: server={} port={} consumer_group={} topic={}".
+                                    format(self._server, self._port, self._consumer_group, self._topic))
 
     def get_streaming_executor(self):
         """
