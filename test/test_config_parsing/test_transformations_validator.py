@@ -1,3 +1,5 @@
+import json
+import os
 import unittest
 
 import pyspark.sql.types as types
@@ -9,12 +11,24 @@ from operations.transformation_operations import TransformationOperations
 
 
 class TransformationsValidatorTestCase(unittest.TestCase):
+    def setUp(self):
+        with open(os.path.join(os.path.dirname(__file__),
+                               os.path.join("..", "data", "config_data_structure.json"))) as cfg:
+            data_structure = json.load(cfg)
+
+        self.data_structure = data_structure
+        data_structure_list = list(map(lambda x: (x, data_structure[x]), data_structure.keys()))
+        data_structure_sorted = sorted(data_structure_list, key=lambda x: x[1]["index"])
+        self.data_structure_pyspark = types.StructType(
+            list(map(lambda x: types.StructField(x[0], getattr(types, x[1]["type"])()),
+                     data_structure_sorted)))
+
     def test_validate_work_success(self):
         validator = TransformatoinsValidator(TransformationOperations({
-        "country": "./GeoLite2-Country.mmdb",
-        "city": "./GeoLite2-City.mmdb",
-        "asn": "./GeoLite2-ASN.mmdb"
-        }))
+            "country": "./GeoLite2-Country.mmdb",
+            "city": "./GeoLite2-City.mmdb",
+            "asn": "./GeoLite2-ASN.mmdb"
+        }), self.data_structure_pyspark)
         fields = validator.validate(["src_ip", "dst_ip", "packet_size", "sampling_rate"])
         self.assertEqual(fields, types.StructType([
             types.StructField('src_ip', types.StringType()),
@@ -28,7 +42,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         with self.assertRaises(errors.FieldNotExists):
             validator.validate(["src_ip", "dst_ip", "packet_size", "sample_rate"])
@@ -38,7 +52,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         fields = validator.validate([FieldTransformation("size", "packet_size"), "dst_ip"])
 
@@ -52,7 +66,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         with self.assertRaises(errors.FieldNotExists):
             validator.validate([FieldTransformation("size", "not_exists_field"), "dst_ip"])
@@ -62,7 +76,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "not_exists_operation"
@@ -75,7 +89,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "sum"
@@ -89,7 +103,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "mult"
@@ -103,7 +117,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "mult"
@@ -121,7 +135,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "sum"
@@ -143,7 +157,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         syntaxtree = SyntaxTree()
         syntaxtree.operation = "not_exists_operator"
@@ -161,7 +175,7 @@ class TransformationsValidatorTestCase(unittest.TestCase):
             "country": "./GeoLite2-Country.mmdb",
             "city": "./GeoLite2-City.mmdb",
             "asn": "./GeoLite2-ASN.mmdb"
-        }))
+        }), self.data_structure_pyspark)
 
         main_syntax_tree = SyntaxTree()
         main_syntax_tree.operation = "truncate"

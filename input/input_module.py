@@ -1,44 +1,14 @@
 import json
-import os
-import sys
-
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.streaming import StreamingContext
-
 from errors import InputError, KafkaConnectError
 from .executors import BatchExecutor, StreamingExecutor
 from pyspark.streaming.kafka import KafkaUtils
 
-timestamp = StructField('timestamp', LongType())  # 1
-flow_indicator = StructField('FLOW_indicator', StringType())  # 2
-agent_address = StructField('agent_address', StringType())  # 3
-input_port = StructField('input_port', IntegerType())  # 4
-output_port = StructField('output_port', IntegerType())  # 5
-src_mac = StructField('src_mac', StringType())  # 6
-dst_mac = StructField('dst_mac', StringType())  # 7
-ethernet_type = StructField('ethernet_type', StringType())  # 8
-in_vlan = StructField('in_vlan', IntegerType())  # 9
-out_vlan = StructField('out_vlan', IntegerType())  # 10
-src_ip = StructField('src_ip', StringType())  # 11
-dst_ip = StructField('dst_ip', StringType())  # 12
-ip_protocol = StructField('ip_protocol', StringType())  # 13
-ip_tos = StructField('ip_tos', StringType())  # 14
-ip_ttl = StructField('ip_ttl', StringType())  # 15
-src_port_or_icmp_type = StructField('src_port_or_icmp_type', IntegerType())  # 16
-dst_port_or_icmp_code = StructField('dst_port_or_icmp_code', IntegerType())  # 17
-tcp_flags = StructField('tcp_flags', StringType())  # 18
-packet_size = StructField('packet_size', LongType())  # 19
-ip_size = StructField('ip_size', IntegerType())  # 20
-sampling_rate = StructField('sampling_rate', IntegerType())  # 21
-
-data_struct = StructType([timestamp, flow_indicator, agent_address, input_port, output_port,
-                          src_mac, dst_mac, ethernet_type, in_vlan, out_vlan, src_ip, dst_ip,
-                          ip_protocol, ip_tos, ip_ttl, src_port_or_icmp_type, dst_port_or_icmp_code,
-                          tcp_flags, packet_size, ip_size, sampling_rate])
-
 string_to_int = lambda x: int(x)
 string_to_string = lambda x: x
+string_to_float = lambda x: float(x)
 
 
 def type_to_func(type_field):
@@ -48,6 +18,11 @@ def type_to_func(type_field):
         return string_to_int
     if type_field == StringType():
         return string_to_string
+    if type_field == DoubleType():
+        return string_to_float
+    if type_field == FloatType():
+        return string_to_float
+
 
 class InputConfig:
     """
@@ -87,7 +62,7 @@ class ReadFactory():
             if (self._config.content["input"]["input_type"] == "csv"):
                 return ReadCSVFile(self._config.content).get_batch_executor()
             elif (self._config.content["input"]["input_type"] == "kafka"):
-                return KafkaStreaming(self._config.content).get_streaming_executor()
+                return KafkaStreaming(self._config).get_streaming_executor()
             raise InputError("Error: {} unsuported input format. ReadFactory cannot create Executable".format(
                 self._config.content["input"]))
         raise InputError("Error: Some option was miss in config file. ReadFactory cannot create Executable")
@@ -95,22 +70,21 @@ class ReadFactory():
 
 class KafkaStreaming(object):
     def __init__(self, config):
-        self._server = config["input"]["options"]["server"]
-        self._port = config["input"]["options"]["port"]
-        self._topic = config["input"]["options"]["topic"]
-        self._batchDuration = config["input"]["options"]["batchDuration"]
-        self._sep = config["input"]["options"]["sep"]
+        self._server = config.content["input"]["options"]["server"]
+        self._port = config.content["input"]["options"]["port"]
+        self._topic = config.content["input"]["options"]["topic"]
+        self._batchDuration = config.content["input"]["options"]["batchDuration"]
+        self._sep = config.content["input"]["options"]["sep"]
         self._spark = SparkSession.builder.appName("StreamingDataKafka").getOrCreate()
         sc = self._spark.sparkContext
-        sc.addFile(config["databases"]["country"])
-        sc.addFile(config["databases"]["city"])
-        sc.addFile(config["databases"]["asn"])
+        sc.addFile(config.content["databases"]["country"])
+        sc.addFile(config.content["databases"]["city"])
+        sc.addFile(config.content["databases"]["asn"])
 
         kafka_server = self._server + ":" + str(self._port)
         self._ssc = StreamingContext(sc, self._batchDuration)
 
-        # self._dstream = KafkaUtils.createStream(ssc, kafka_server, "id-consumer", {self._topic: 1})
-        list_conversion_function = list((map(lambda x: type_to_func(x.dataType), data_struct)))
+        list_conversion_function = list((map(lambda x: type_to_func(x.dataType), config.data_structure_pyspark)))
         ranked_pointer = list(enumerate(list_conversion_function))
         functions_list = list(map(lambda x: lambda list_string: x[1](list_string[x[0]]), ranked_pointer))
         function_convert = lambda x: list(map(lambda func: func(x), functions_list))
@@ -146,7 +120,7 @@ class ReadCSVFile(object):
         sc.addFile(config["databases"]["city"])
         sc.addFile(config["databases"]["asn"])
 
-        self.rdd = spark.read.csv(config["input"]["options"]["filename"], data_struct).rdd
+        self.rdd = spark.read.csv(config["input"]["options"]["filename"], config.data_structure_pyspark).rdd
 
     def get_batch_executor(self):
         """

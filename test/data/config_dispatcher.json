@@ -1,19 +1,19 @@
 {
   "input": {
-    "input_type": "csv",
+    "data_structure": "config_data_structure.json",
+    "input_type": "kafka",
     "options": {
-    "filename": "test/data/test.csv"
+      "server": "192.168.1.1",
+      "port": 29092,
+      "topic": "testtag01",
+      "batchDuration": 10,
+      "sep": ","
     }
   },
   "output": {
-    "method": "csv",
+    "method": "stdout",
     "options": {
-      "csv": {
-        "path": "1.csv",
-        "encoding": "utf-8",
-        "sep": ";"
       }
-    }
   },
   "processing": {
     "transformation": " packet_size; traffic: mult(packet_size,sampling_rate)",

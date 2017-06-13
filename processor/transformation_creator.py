@@ -1,32 +1,10 @@
-from config_parsing.transformations_parser import FieldTransformation, SyntaxTree
+from config_parsing.transformations_parser import FieldTransformation
+
 
 class TransformationCreator:
-    def __init__(self, parsed_transformation, transformation_operations):
+    def __init__(self, data_structure, parsed_transformation, transformation_operations):
         self.parsed_transformation = parsed_transformation
-        self.mapping = {
-            'timestamp': 0,
-            'FLOW_indicator': 1,
-            'agent_address': 2,
-            'input_port': 3,
-            'output_port': 4,
-            'src_mac': 5,
-            'dst_mac': 6,
-            'ethernet_type': 7,
-            'in_vlan': 8,
-            'out_vlan': 9,
-            'src_ip': 10,
-            'dst_ip': 11,
-            'ip_protocol': 12,
-            'ip_tos': 13,
-            'ip_ttl': 14,
-            'src_port_or_icmp_type': 15,
-            'dst_port_or_icmp_code': 16,
-            'tcp_flags': 17,
-            'packet_size': 18,
-            'ip_size': 19,
-            'sampling_rate': 20,
-        }
-
+        self.mapping = dict(map(lambda x: (x, data_structure[x]["index"]), data_structure.keys()))
         self.transformation_operations = transformation_operations
 
     def __generate_params_list(self, children, row):

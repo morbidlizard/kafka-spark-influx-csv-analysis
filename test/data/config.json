@@ -1,8 +1,13 @@
 {
   "input": {
-    "input_type": "csv",
+    "data_structure": "config_data_structure.json",
+    "input_type": "kafka",
     "options": {
-    "filename": "test/data/test.csv"
+      "server": "176.120.25.195",
+      "port": 29092,
+      "topic": "testtag01",
+      "batchDuration": 10,
+      "sep": ","
     }
   },
   "output": {

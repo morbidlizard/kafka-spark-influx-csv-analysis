@@ -7,37 +7,9 @@ from .transformations_parser import FieldTransformation
 
 
 class TransformatoinsValidator:
-    def __init__(self, transformation_operations):
-        timestamp = types.StructField('timestamp', types.LongType())  # 1
-        flow_indicator = types.StructField('FLOW_indicator', types.StringType())  # 2
-        agent_address = types.StructField('agent_address', types.StringType())  # 3
-        input_port = types.StructField('input_port', types.LongType())  # 4
-        output_port = types.StructField('output_port', types.LongType())  # 5
-        src_mac = types.StructField('src_mac', types.StringType())  # 6
-        dst_mac = types.StructField('dst_mac', types.StringType())  # 7
-        ethernet_type = types.StructField('ethernet_type', types.StringType())  # 8
-        in_vlan = types.StructField('in_vlan', types.LongType())  # 9
-        out_vlan = types.StructField('out_vlan', types.LongType())  # 10
-        src_ip = types.StructField('src_ip', types.StringType())  # 11
-        dst_ip = types.StructField('dst_ip', types.StringType())  # 12
-        ip_protocol = types.StructField('ip_protocol', types.StringType())  # 13
-        ip_tos = types.StructField('ip_tos', types.StringType())  # 14
-        ip_ttl = types.StructField('ip_ttl', types.StringType())  # 15
-        src_port_or_icmp_type = types.StructField('src_port_or_icmp_type', types.LongType())  # 16
-        dst_port_or_icmp_code = types.StructField('dst_port_or_icmp_code', types.LongType())  # 17
-        tcp_flags = types.StructField('tcp_flags', types.StringType())  # 18
-        packet_size = types.StructField('packet_size', types.LongType())  # 19
-        ip_size = types.StructField('ip_size', types.LongType())  # 20
-        sampling_rate = types.StructField('sampling_rate', types.LongType())  # 21
-
-        self.current_fields = types.StructType([timestamp, flow_indicator, agent_address, input_port, output_port,
-                                                src_mac, dst_mac, ethernet_type, in_vlan, out_vlan, src_ip, dst_ip,
-                                                ip_protocol, ip_tos, ip_ttl, src_port_or_icmp_type,
-                                                dst_port_or_icmp_code,
-                                                tcp_flags, packet_size, ip_size, sampling_rate])
-
+    def __init__(self, transformation_operations, data_structure_pyspark):
+        self.current_fields = data_structure_pyspark
         self.transformation_operations = transformation_operations
-
 
     def __get_field(self, field):
         try:
