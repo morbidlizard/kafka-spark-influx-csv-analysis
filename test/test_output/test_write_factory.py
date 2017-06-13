@@ -1,10 +1,10 @@
 import os
 import unittest
 
-import errors
+from errors import errors
 
-from output.csv_writer import CSVWriter
 from output.output_config import OutputConfig
+from output.std_out_writer import StdOutWriter
 from output.writer_factory import WriterFactory
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json"))
@@ -16,8 +16,8 @@ class WriterFactoryTestCase(unittest.TestCase):
         factory = WriterFactory()
         config = OutputConfig(CONFIG_PATH)
 
-        writer = factory.instance_writer(config, list(), list)
-        self.assertIsInstance(writer, CSVWriter, "Writer should be instance of CSVWriter")
+        writer = factory.instance_writer(config, list(), list())
+        self.assertIsInstance(writer, StdOutWriter, "Writer should be instance of StdOutWriter")
 
     def test_unsupported_output_format_exception_instance_writer(self):
         factory = WriterFactory()

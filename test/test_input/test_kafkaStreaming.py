@@ -1,5 +1,5 @@
 from unittest import TestCase,skip
-from errors import KafkaConnectError
+from errors.errors import KafkaConnectError
 from input.executors import StreamingExecutor
 from input.input_module import KafkaStreaming
 

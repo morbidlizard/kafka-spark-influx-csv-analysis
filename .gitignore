@@ -4,3 +4,7 @@ metastore_db/**
 spark-warehouse/**
 *.log
 *.mmdb
+build
+dist
+sflow_analysis.egg-info
+dependencies

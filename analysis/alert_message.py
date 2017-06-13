@@ -1,8 +1,10 @@
 import json
 import random
 from datetime import datetime
+
 from kafka import KafkaProducer
-from singleton import Singleton
+from singelton.singleton import Singleton
+
 
 
 class SingleKafkaProducer(KafkaProducer, metaclass=Singleton):

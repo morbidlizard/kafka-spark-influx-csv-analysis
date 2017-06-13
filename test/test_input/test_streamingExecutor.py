@@ -4,7 +4,7 @@ from pyspark import SparkConf
 from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
 from pyspark.streaming import DStream
-from errors import ExecutorError
+from errors.errors import ExecutorError
 from input.executors import StreamingExecutor
 
 

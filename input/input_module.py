@@ -3,8 +3,8 @@ import json
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.streaming import StreamingContext
-from errors import InputError, KafkaConnectError
-from .executors import BatchExecutor, StreamingExecutor
+from errors.errors import InputError, KafkaConnectError
+from .executors import StreamingExecutor
 from pyspark.streaming.kafka import KafkaUtils
 
 string_to_int = lambda x: int(x)
@@ -23,6 +23,7 @@ def type_to_func(type_field):
         return string_to_float
     if type_field == FloatType():
         return string_to_float
+
 
 
 class InputConfig:
@@ -60,9 +61,7 @@ class ReadFactory():
         :return:
         """
         if ("input" in self._config.content.keys()):
-            if (self._config.content["input"]["input_type"] == "csv"):
-                return ReadCSVFile(self._config.content).get_batch_executor()
-            elif (self._config.content["input"]["input_type"] == "kafka"):
+            if (self._config.content["input"]["input_type"] == "kafka"):
                 return KafkaStreaming(self._config).get_streaming_executor()
             raise InputError("Error: {} unsuported input format. ReadFactory cannot create Executable".format(
                 self._config.content["input"]))
@@ -81,6 +80,7 @@ class KafkaStreaming(object):
 
         self._spark = SparkSession.builder.appName("StreamingDataKafka").getOrCreate()
         sc = self._spark.sparkContext
+
         sc.addFile(config.content["databases"]["country"])
         sc.addFile(config.content["databases"]["city"])
         sc.addFile(config.content["databases"]["asn"])
@@ -104,29 +104,3 @@ class KafkaStreaming(object):
         """
         return StreamingExecutor(self._dstream, self._ssc)
 
-
-class ReadCSVFile(object):
-    """
-        readCsvFile is a class for reading data from csv file.
-    """
-
-    def __init__(self, config):
-        """
-        Create ReadCsvFile and read data from csv file.
-
-        :param path_to_file: path to csv file with data
-        """
-
-        spark = SparkSession.builder.getOrCreate()
-        sc = spark.sparkContext
-        sc.addFile(config["databases"]["country"])
-        sc.addFile(config["databases"]["city"])
-        sc.addFile(config["databases"]["asn"])
-
-        self.rdd = spark.read.csv(config["input"]["options"]["filename"], config.data_structure_pyspark).rdd
-
-    def get_batch_executor(self):
-        """
-            getExecutable return Executor object
-        """
-        return BatchExecutor(self.rdd)

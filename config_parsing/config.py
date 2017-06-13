@@ -1,5 +1,5 @@
 import json
-
+import os
 from pyspark.sql import types
 
 
@@ -10,6 +10,7 @@ class Config:
             self.content = json.load(cfg)
         with open(self.content["input"]["data_structure"]) as cfg:
             data_structure = json.load(cfg)
+
         self.data_structure = data_structure
         data_structure_list = list(map(lambda x: (x, data_structure[x]), data_structure.keys()))
         data_structure_sorted = sorted(data_structure_list, key=lambda x: x[1]["index"])

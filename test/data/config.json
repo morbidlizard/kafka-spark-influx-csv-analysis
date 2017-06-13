@@ -1,7 +1,7 @@
 {
   "input": {
-    "data_structure": "config_data_structure.json",
     "input_type": "kafka",
+    "data_structure": "config_data_structure.json",
     "options": {
       "server": "176.120.25.195",
       "port": 29092,
@@ -12,13 +12,8 @@
     }
   },
   "output": {
-    "method": "csv",
+    "method": "stdout",
     "options": {
-      "csv": {
-        "path": "1.csv",
-        "encoding": "utf-8",
-        "sep": ";"
-      }
     }
   },
   "processing": {

@@ -4,13 +4,15 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 from config_parsing.config import Config
-from errors import InputError
-from input.executors import BatchExecutor, StreamingExecutor
+from errors.errors import InputError
+from input.executors import StreamingExecutor
 from input.input_module import ReadFactory, InputConfig
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "config.json"))
 INCORRECT_CONFIG1_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "bad1_input_config.json"))
 INCORRECT_CONFIG2_PATH = os.path.join(os.path.dirname(__file__), os.path.join("..", "data", "bad2_input_config.json"))
+
+
 
 class ReadFactoryTestCase(unittest.TestCase):
     @mock.patch('input.input_module.KafkaUtils', autospec=True)
@@ -31,7 +33,6 @@ class ReadFactoryTestCase(unittest.TestCase):
         config = Config(CONFIG_PATH)
         factory = ReadFactory(config)
         test_executor = factory.get_executor()
-
 
         self.assertIsInstance(test_executor, StreamingExecutor,
                               "When read csv file executor should be instance of BatchExecutable")

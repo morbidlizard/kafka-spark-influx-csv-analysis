@@ -14,7 +14,7 @@
   "output": {
     "method": "stdout",
     "options": {
-      }
+    }
   },
   "processing": {
     "transformation": " packet_size; traffic: mult(packet_size,sampling_rate)",
