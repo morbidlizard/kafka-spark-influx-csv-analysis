@@ -8,13 +8,13 @@
             1.1.5. GeoLite2 
             1.1.6. Sflow-producer
         1.2. Deployment
-            1.2.1. Switch to swarm mode
-            1.2.2. Create network
-            1.2.3. Running Zookeeper
-            1.2.4. Running Kafka
-            1.2.5. Running sflow-producer 
-            1.2.6. Running Grafana
-            1.2.7. Running Influxdb
+            1.2.1. Switch to the swarm mode
+            1.2.2. Create a network
+            1.2.3. Run Zookeeper
+            1.2.4. Run Kafka
+            1.2.5. Run sflow-producer 
+            1.2.6. Run Grafana
+            1.2.7. Run Influxdb
     2. Configuration
         2.1. Sections description
             2.1.1. Section "input"
@@ -26,43 +26,41 @@
     4. Running application
 
 ## Infrastructure
-For correct application working we must deploy following services:
+Before starting the application, you need to deploy the following services:
 
 * Kafka + Zookeeper
 * Grafana
 * InfluxDB
 
 ### Dependencies
-For downloading according docker images run do following:
+To download necessary docker images, run the following commands:
 
 * InfluxDB: `docker pull influxdb`
 * Zookeeper: `docker pull confluentinc/cp-zookeeper:3.0.0`
 * Kafka: `docker pull confluentinc/cp-kafka:3.0.0`
 * Grafana: `docker pull grafana/grafana`
 
-Furthermore, for correct working functions country, city and aarea you should download geolite2 databases by following link: 
+Additionally, in order for functions country(), city() and aarea() to work, you need to download geolite2 databases from the following page:
 `https://dev.maxmind.com/geoip/geoip2/geolite2/`
 
-Sflow-producer it's util for sending sflow data to kafka, for build docker image run command: `docker build -t sflow-producer sflow-producer/`
+Sflow-producer is a utility program for sending sflow data to Kafka. To build a docker image for it, run the following commands: `docker build -t sflow-producer sflow-producer/`
 
 ### Deployment
-
-* Switch to swarm mode: `docker swarm init`
-* Create overlay network: `docker network create --driver overlay --attachable=true network-name`
-* Running Zookeeper: `docker service create --name=zookeeper --mount type=bind,source=/path/to/folder,destination=/var/lib/zookeeper/data -e ZOOKEEPER_CLIENT_PORT=32181 -e ZOOKEEPER_TICK_TIME=2000 --network=network-name confluentinc/cp-zookeeper:3.0.0`
-* Running Kafka: `docker service create --name=kafka --mount type=bind,source=/path/to/folder,destination=/var/lib/kafka/data -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:32181 -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092 --network=network-name confluentinc/cp-kafka:3.0.0`
-* Running sflow-producer: `docker run -d --rm --name=producer -e TOPIC=topic_name -e ZK=zookeeper:32181 -e BROKER=kafka:29092 -p 6343:6343/udp --network=network-name sflow-producer`
-* Running Grafana: `docker service create --name=sflow-view -p 3000:3000 --env GF_SECURITY_ADMIN_PASSWORD=your_password --network=network-name grafana/grafana`
+* Switch to the swarm mode: `docker swarm init`
+* Create an overlay network: `docker network create --driver overlay --attachable=true network-name`
+* Run Zookeeper: `docker service create --name=zookeeper --mount type=bind,source=/path/to/folder,destination=/var/lib/zookeeper/data -e ZOOKEEPER_CLIENT_PORT=32181 -e ZOOKEEPER_TICK_TIME=2000 --network=network-name confluentinc/cp-zookeeper:3.0.0`
+* Run Kafka: `docker service create --name=kafka --mount type=bind,source=/path/to/folder,destination=/var/lib/kafka/data -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:32181 -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092 --network=network-name confluentinc/cp-kafka:3.0.0`
+* Run sflow-producer: `docker run -d --rm --name=producer -e TOPIC=topic_name -e ZK=zookeeper:32181 -e BROKER=kafka:29092 -p 6343:6343/udp --network=network-name sflow-producer`
+* Run Grafana: `docker service create --name=sflow-view -p 3000:3000 --env GF_SECURITY_ADMIN_PASSWORD=your_password --network=network-name grafana/grafana`
     
         login: admin, password: your_password
     
-* Running InfluxDB: `docker service create --name=sflow-store --mount type=bind,source=/path/to/folder,destination=/var/lib/influxdb --network=network-name influxdb`
+* Run InfluxDB: `docker service create --name=sflow-store --mount type=bind,source=/path/to/folder,destination=/var/lib/influxdb --network=network-name influxdb`
     
         login: root, password: root
 
-
 ## Configuration
-For run application we need configuration file. Configuration file it's json file with following struct:
+To run the application, you will need a configuration file. It is a json file with the following structure:
 ```json
 {
     "input": {
@@ -158,10 +156,10 @@ For run application we need configuration file. Configuration file it's json fil
     }
 }
 ```
-In file 5 sections: 4 required ( input, output, processing, databases ) and 1 optional (analysis). Describe every section below in details (all fields is required):
+File has 5 sections: 4 of them are mandatory (input, output, processing, databases) and 1 is optional (analysis). Sections are described in more detail below (all fields are mandatory).
 
 ### Section input
-This section describes how application receive data
+This section describes how the application will receive data.
 
 * "input_type" - input data type, valid values: "csv", "kafka"
 * "data_structure" - path to file with data structure 
@@ -174,52 +172,52 @@ This section describes how application receive data
     * "sep" - fields delimiter for received string
 
 ### Section output
-This section describes how application deduces data
+This section describes how the application will output data.
 
 * "method" - data output type, valid values: "csv", "influx"
 * "options" > influx":
     * "host" - influxdb hostname
-    * "port": influxdb port,
-    * "username": influxdb user,
-    * "password": password for user above,
-    * "database": influxdb database name,
+    * "port": influxdb port
+    * "username": influxdb user
+    * "password": password for user above
+    * "database": influxdb database name
     * "measurement": measurement name
 
 ### Section processing
-This section describes transformations and aggregations which will be preformed on input data
+This section specifies transformations and aggregations to be performed on the input data.
 
-* "transformation" - this string describes how will be transformed every received string from kafka.  
+* "transformation" - this string specifies transformation steps for every string received from the input source.
 
-   User can rename field (new_name: old_name), apply one of 7 functions: sum, div, mult, minus, country, city, aarea (src_country: country(src_ip)) or just use field without changes.  
+   User can rename the field (new_name: old_name), apply one of 7 functions: sum, div, mult, minus, country, city, aarea (src_country: country(src_ip)) or just use the field unchanged. 
 
-   Now nested operations (sum(mult(packet_size, sampling_rate), 1000)) not supported. 
+   Nested operations (sum(mult(packet_size, sampling_rate), 1000)) are not supported at the moment. 
 
-   Each field from transformation should be used in aggregation, otherwise the program will raise exception.
+   Each field declared in the transformation section should be subsequently used in aggregation, otherwise the application will raise exception.
    
-* aggregation - this section describes how will aggregate transformed data.  
+* aggregation - this section specifies how the data should be aggregated after transformation.
     
-  Field "operation_type" is aggregation type, valid values is "reduce" or "reduceByKey". In case "reduceByKey" user should specify aggregation key (key = src_country).
+  Field "operation_type" specifies aggregation type, valid values are "reduce" and "reduceByKey". In case of "reduceByKey" user needs to specify an aggregation key (key = src_country).
   
-  Key can contains more than one field (key = (src_ip, dst_country, src_port_or_icmp_type)).
+  The key can contain more than one field (key = (src_ip, dst_country, src_port_or_icmp_type)).
   
-  User can apply to data one of 4 aggregation function: Sum, Mult, Max, Min (Max(packet_size)).
+  User can specify one of the 4 aggregation functions: Sum, Mult, Max, Min (Max(packet_size)).
 
 ### Section databases
-This section contains paths to databases which necessary to work functions country, city, aarea
+This section specifies paths to databases which are necessary for the geo functions (country(), city(), aarea()) to work.
 
-* "country" - path to database, for resolving country 
-* "city" - path to database, for resolving city
-* "asn" - path to database, for resolving asn
+* "country" - path to database for resolving country 
+* "city" - path to database for resolving city
+* "asn" - path to database for resolving asn
 
 ### Section analysis
-Rules for analysis and notifications about anomalies
+This section specifies rules for data analysis and ways to notify about detected anomalies.
 
-* Section "historical" now required. This say that analysis should be based on historical data
-    * "method" - source for historical data, valid values: "influx"
+* Section "historical" is mandatory at the moment. It specifies that analysis will be based on historical data.
+    * "method" - source of historical data, valid values: "influx"
     * "influx_options" - see section output > options
     
-* Section "alert" describes settings for anomalies notifications
-    * "method" - type of notifications output, valid values: "stdout", "kafka"
+* Section "alert" specifies settings for notifications of detected anomalies.
+    * "method" -specifies output method for notifications, valid values: "stdout", "kafka"
     * "options"
         * "server" - kafka hostname
         * "port" - kafka port
@@ -227,12 +225,10 @@ Rules for analysis and notifications about anomalies
 
 * accuracy - accuracy in seconds, [ now - time_delta - accuracy; now - time_delta + accuracy ]
 
-* Section "rule" contains array analysis modules names and options for them
-    * "module" - class name for analysis. For example in analysis module will import class "SimpleAnalysis". 
-    This class should be in folder with same name and implement IUserAnalysis interface. Method with name "analysis" should be implement. This method receive two arguments.
-    First argument is object which allow get historical data by index and field name. Second argument is object which allow send notification by calling method "send_message"
-    * "name" - module name which use for output warning messages
-    * "options" - settings which will send to class constructor. This is user defined options and allow control analysis behaviour
+* Section "rule" contains an array of user-defined analysis modules with their respective names and options. System automatically imports class "SimpleAnalysis", so you don’t need to explicitly specify it.
+    * "module" - name of the class to be used for analysis. Specified class should be located in a folder with the same name and needs to implement the IUserAnalysis interface. Method with name "analysis" should be implemented. This method will receive two arguments. First argument is an object which provides historical data access by index and field name. Second argument is an object which allows to send notifications by calling its method "send_message"
+    * "name" - module name to be used in warning messages
+    * "options" - settings to be passed to the class constructor. These are user defined and allow control over analysis behaviour
 
 ## List of fields for transformations
 ```
@@ -261,10 +257,9 @@ Rules for analysis and notifications about anomalies
 ```
 
 ## Running application
+When the infrastructure is deployed and the configuration file is ready, you can run the application. To build a docker image for the application run the following commands:
 
-When infrastructure and config ready we can run application. For building image with application run following commands:
-
-* Build base image with spark: `docker build -t bw-sw-spark docker/`
-* Build application image: `docker build -t sflow-app .`
-* Run application: `docker service create --name=app --mount type=bind,source=$PWD,destination=/configs --network=network-name sflow-app /configs/config_reducebykeys.json`
+* Build a base image for spark: `docker build -t bw-sw-spark docker/`
+* Build an image for the application: `docker build -t sflow-app .`
+* Run the application: `docker service create --name=app --mount type=bind,source=$PWD,destination=/configs --network=network-name sflow-app /configs/config_reducebykeys.json`
     
